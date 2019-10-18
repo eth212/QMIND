@@ -1,32 +1,23 @@
 import numpy as np
 import pandas as pd
-<<<<<<< HEAD
 
-df = pd.read_excel("Data_0.xlsx")
-data = pd.DataFrame(df)
-amount = 30000
-cars = []
+big_data = pd.read_excel("tractor/tractor_data.xlsx")
+df = pd.DataFrame(big_data)
 
-for i in range(len(data["SalesPrice"])):
-    if(data["Location"].iloc[i] == "DENVER, CO"):
-        cars.append(data["SalesPrice"].iloc[i])
+def make_col():
+    days_since = []
+    value_check = pd.notnull(df["Year"])
+    for i in range(len(df["SaleDate"])):
+        if value_check.iloc[i]:
+            day = df["SaleDate"].iloc[i].dayofyear
+            year_sold = df["SaleDate"].iloc[i].year
+            make_year = int(df["Year"].iloc[i])
+            value = (year_sold - make_year) + day
+            days_since.append(value)
+        else:
+            days_since.append(0)
+    return days_since
 
+list_dates = make_col()
 
-
-string = data["Notes"].iloc[2][:]
-
-for i in range(len(string)):
-    string[i]
-
-
-
-m = []
-for i in range(len(data)):
-    string = str(data["Notes"].iloc[i][0:4])
-    m.append(string)
-
-print(m)
-
-data["Midi_mini"] = m
-
-data["SalesPrice"].iloc[100:110]
+df["DaysOwned"] = list_dates
