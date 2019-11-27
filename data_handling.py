@@ -6,8 +6,6 @@ df = pd.read_excel("Data_0.xlsx",header=0,usecols=use_cols)
 #num_2012 = len([i for i in df['Year'] if i==2012])
 #print(num_2012)
 
-
-
 def separate_commas(dataframe,column):
     column_data = dataframe[column]
     column_better = []
