@@ -18,7 +18,18 @@ def make_col():
             days_since.append(0)
     return days_since
 
-list_dates = make_col()
-
-df["DaysOwned"] = list_dates
-df2 = pd.DataFrame()
+def separate_commas(dataframe,column):
+    column_data = dataframe[column]
+    column_better = []
+    for datapoint in column_data:
+        words = [""]
+        count = 0
+        for letter in datapoint:
+            if letter!=",":
+                words[count]+=letter
+            else:
+                words.append("")
+                count+=1
+        column_better.append(words)
+    dataframe[column]=column_better
+separate_commas(df,"Notes")
