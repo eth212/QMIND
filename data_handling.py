@@ -3,7 +3,7 @@ import pandas as pd
 
 big_data = pd.read_excel("tractor/tractor_data.xlsx")
 df = pd.DataFrame(big_data)
-
+df.corrwith(df["Salesprice"])
 def make_col():
     days_since = []
     value_check = pd.notnull(df["Year"])
@@ -21,3 +21,4 @@ def make_col():
 list_dates = make_col()
 
 df["DaysOwned"] = list_dates
+df2 = pd.DataFrame()
