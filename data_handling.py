@@ -1,43 +1,22 @@
 import numpy as np
 import pandas as pd
-<<<<<<< HEAD
 
-df = pd.read_excel("Data_0.xlsx")
-data = pd.DataFrame(df)
-amount = 30000
-cars = []
-
-for i in range(len(data["SalesPrice"])):
-    if(data["Location"].iloc[i] == "DENVER, CO"):
-        cars.append(data["SalesPrice"].iloc[i])
-
-
-
-string = data["Notes"].iloc[2][:]
-
-for i in range(len(string)):
-    string[i]
-
-
-
-m = []
-for i in range(len(data)):
-    string = str(data["Notes"].iloc[i][0:4])
-    m.append(string)
-
-print(m)
-
-data["Midi_mini"] = m
-
-data["SalesPrice"].iloc[100:110]
-=======
-use_cols = [i for i in range(27)]
-df = pd.read_excel("Data_0.xlsx",header=0,usecols=use_cols)
-
-#num_2012 = len([i for i in df['Year'] if i==2012])
-#print(num_2012)
-
-
+big_data = pd.read_excel("tractor/tractor_data.xlsx")
+df = pd.DataFrame(big_data)
+df.corrwith(df["Salesprice"])
+def make_col():
+    days_since = []
+    value_check = pd.notnull(df["Year"])
+    for i in range(len(df["SaleDate"])):
+        if value_check.iloc[i]:
+            day = df["SaleDate"].iloc[i].dayofyear
+            year_sold = df["SaleDate"].iloc[i].year
+            make_year = int(df["Year"].iloc[i])
+            value = (year_sold - make_year) + day
+            days_since.append(value)
+        else:
+            days_since.append(0)
+    return days_since
 
 def separate_commas(dataframe,column):
     column_data = dataframe[column]
@@ -54,4 +33,3 @@ def separate_commas(dataframe,column):
         column_better.append(words)
     dataframe[column]=column_better
 separate_commas(df,"Notes")
->>>>>>> d80b7bb7e39fad50487f6807932370ce4bb8abb6
