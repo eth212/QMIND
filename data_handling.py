@@ -1,10 +1,22 @@
 import numpy as np
 import pandas as pd
-use_cols = [i for i in range(27)]
-df = pd.read_excel("Data_0.xlsx",header=0,usecols=use_cols)
 
-#num_2012 = len([i for i in df['Year'] if i==2012])
-#print(num_2012)
+big_data = pd.read_excel("tractor/tractor_data.xlsx")
+df = pd.DataFrame(big_data)
+df.corrwith(df["Salesprice"])
+def make_col():
+    days_since = []
+    value_check = pd.notnull(df["Year"])
+    for i in range(len(df["SaleDate"])):
+        if value_check.iloc[i]:
+            day = df["SaleDate"].iloc[i].dayofyear
+            year_sold = df["SaleDate"].iloc[i].year
+            make_year = int(df["Year"].iloc[i])
+            value = (year_sold - make_year) + day
+            days_since.append(value)
+        else:
+            days_since.append(0)
+    return days_since
 
 def separate_commas(dataframe,column):
     column_data = dataframe[column]

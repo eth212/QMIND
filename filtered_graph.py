@@ -6,7 +6,9 @@ from matplotlib.dates import DateFormatter
 import numpy as np
 
 # data = pd.read_excel("../Tractor_Data_Inflation_Adjusted.xlsx", parse_dates=['SaleDate'])
- data = pd.read_excel("../Tractor_Data_Inflation_Adjusted.xlsx")
+
+data = pd.read_excel("tractor/Tractor_Data_Inflation_Adjusted.xlsx")
+df = pd.DataFrame(data)
 
 class Filtered_graph:
     def __init__(self, data, SaleDate_Year=None, Location=None, SerialNumber=None, Year=None, Make=None, Model=None):
