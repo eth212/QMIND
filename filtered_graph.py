@@ -1,9 +1,12 @@
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 # cborn
 # time stamp to datetime.datetime
 import matplotlib.dates as mdates
 from matplotlib.dates import DateFormatter
+import seaborn as sns
+matplotlib.__version__
 
 # data = pd.read_excel("../Tractor_Data_Inflation_Adjusted.xlsx", parse_dates=['SaleDate'])
 
@@ -87,7 +90,9 @@ class Filtered_graph:
 # fg1.SaleDate
 # fg1.data
 
-fg2 = Filtered_graph(data, SaleDate_Year = [2016], Location = None, SerialNumber = None, Year = None, Make=["FREIGHTLINER"])
+#df = df.drop(columns = [ 'Classification', 'Datasource', 'SerialNumber', 'Make', 'AuctionCompany','HP', 'Suspension','Sleeper', 'Trans', 'Spd', 'Axles','TransactionType', 'mNotes'])
+df = df.dropna()
+fg2 = Filtered_graph(data, SaleDate_Year = [2010], Location = None, SerialNumber = None, Year = None, Make=["FREIGHTLINER"])
 fg2.plot_graph()
 
 
@@ -97,3 +102,63 @@ fg2.plot_graph()
 # Add the rest of the columns
 # Turn this into a GUI
 # Data analysis
+df.columns
+
+class graphing:
+    def __init__(self,DataFrame, Series, Location = None, Year = None, Make = None, Model = None, Engine = None, Suspension = None, Sleeper = None ):
+        #graphing the df[series] against salesprice
+        self.params = {}
+        if type(DataFrame) == pd.core.frame.DataFrame:
+            self.df = DataFrame
+        else:
+            print("\n You must enter a DataFrame source\n")
+
+        self.series = pd.DataFrame(DataFrame[str(Series)])
+        print("string series :",str(Series))
+        print(str(self.series))
+
+        if type(self.series) == pd.core.series.Series:
+            self.s = Series
+        else:
+            print("\n You must enter a DataFrame.Series object\n")
+int(chr('a')) - int(chr('w'))
+
+
+        if(Location != None):
+            self.params["Location"] = Location
+            #data = data[data["SaleDate"].dt.year.isin(SaleDate_Year)]
+            #self.title += "SaleDate_Year = " + str(SaleDate_Year) + ", "
+        if(Year != None):
+            self.params["Year"] = Year
+            #data = data[data["Location"].isin(Location)]
+            #self.title += "Location = " + str(Location) + ", "
+        if(Make != None):
+            self.params["Make"] = Make
+            #data = data[data["SerialNumber"].isin(SerialNumber)]
+            #self.title += "SerialNumber = " + str(SerialNumber) + ", "
+        if(Model != None):
+            self.params["Model"] = Model
+            #data = data[data["Year"].isin(Year)]
+            #self.title += "Year = " + str(Year) + ", "
+        if(Engine != None):
+            self.params["Engine"] = Engine
+            #data = data[data["Make"].isin(Make)]
+            #self.title += "Make = " + str(Make) + ", "
+        if(Suspension != None):
+            self.params["Suspension"] = Suspension
+            #data = data[data["Model"].isin(Model)]
+            #self.title += "Model = " + str(Model) + ", "
+        if(Sleeper != None):
+            self.params["Sleeper"] = Sleeper
+
+        #cleaning up the data
+        self.target = self.df["Salesprice"].dropna()
+
+    def frequency(self):
+        #sns.distplot(self.series)
+        #print(self.series.iloc[0])
+        #sns.distplot(self.target)
+
+graphing(df, "Make")
+
+sns.distplot(df["Salesprice"])
