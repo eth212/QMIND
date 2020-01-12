@@ -4,11 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.dates import DateFormatter
 import numpy as np
-
-# data = pd.read_excel("../Tractor_Data_Inflation_Adjusted.xlsx", parse_dates=['SaleDate'])
-
-data = pd.read_excel("tractor/Tractor_Data_Inflation_Adjusted.xlsx")
-df = pd.DataFrame(data)
+from collections import Counter
 
 class Filtered_graph:
     def __init__(self, data, SaleDate_Year=None, Location=None, SerialNumber=None, Year=None, Make=None, Model=None):
@@ -21,12 +17,12 @@ class Filtered_graph:
             list of strings of the form "(city, state)" to filter the location
         SerialNumber:
             list of strings to filter the SerialNumber
+        Year:
+            list of years to filter the year the product was made
         Make:
             list of string to filter the product make
         Model:
             list of strings to filter the product model
-        Year:
-            list of years to filter the year the product was made
         '''
 
         self.title = "Price of Every Item Filtered by: "
@@ -62,6 +58,7 @@ class Filtered_graph:
 
     def plot_graph_tot(self, graph_type="tot"):
         tot = np.zeros([len(self.SaleDate_Year),12])
+        num_datapoint = np.zeros(len(self.SaleDate_Year))
         fig, axes = plt.subplots(len(self.SaleDate_Year), 1, sharex = 'all', sharey='all')
         for j in range(len(self.SaleDate_Year)):
             for i in range(1,13):
@@ -70,19 +67,31 @@ class Filtered_graph:
                 # day_df = month_df[month_df["SaleDate"].dt.day == ]
                 tot[j, i-1] = np.nansum(month_df["Salesprice"].values)
                 if(graph_type == "avg" and tot[j, i-1] != 0):
-                    tot[j,i-1] /= len(month_df["Salesprice"])
-            axes[j].plot(range(1,13), tot[j,:], color='purple')
-            title = self.title + "Num datapoint = " + str(len(month_df))
-            # axes[j].set(xlabel="Sales Month",
-            # ylabel="Total Price Sold ($)",
-            # title=title)
+                    tot[j, i-1] /= len(month_df["Salesprice"])
+            if(len(self.SaleDate_Year)==1):
+                axes.plot(range(1,13), tot[j,:], color='purple')
+            else:
+                axes[j].plot(range(1,13), tot[j,:], color='purple')
+            num_datapoint[j] = len(year_df)
+
+            # axes[j].set(xlabel="Num datapoint = " + str(len(month_df)))
             # axes[1, 1].plot(range(1,13), tot, '.', color='purple')
 
-            fig.add_subplot(111, frameon=False)
-            plt.xlabel("SalesDate Month")
-            plt.ylabel("Total Price ($)")
-            plt.title(self.title)
+        if(graph_type == "avg"):
+            title = "Average " + self.title
+        else:
+            title = self.title
+        fig.add_subplot(111, frameon=False)
+        plt.tick_params(labelcolor='none', top='off', bottom='off', left='off', right='off')
+        plt.xlabel("SalesDate Month")
+        plt.grid(False)
+        # plt.ylabel("Total Price ($)")
+        # plt.yaxis.set_label_position("right")
+        plt.title(title)
+        plt.savefig('graph.png', dpi=300)
+        # fig.tight_layout()
 
+        return num_datapoint
         # fig, ax = plt.subplots(figsize=(9, 7))
         # ax.plot(range(1,13),
         # tot, '.',
@@ -118,9 +127,11 @@ class Filtered_graph:
 
         # self.pivot(index='SaleDate', columns='SalesPrice', values='count').plot(marker='o')
 
+# data = pd.read_excel("../Tractor_Data_Inflation_Adjusted.xlsx", parse_dates=['SaleDate'])
+data = pd.read_excel("../Tractor_Data_Inflation_Adjusted.xlsx")
+data
 
-
-fg4 = Filtered_graph(data, range(2012,2017), Location = ["ORLANDO, FL"])
+fg4 = Filtered_graph(data, range(2012,2017)) # , Location = ["ORLANDO, FL"])
 fg4.plot_graph_tot("avg")
 fg4.plot_graph_tot()
 
@@ -148,22 +159,54 @@ fg4 = Filtered_graph(data, [2015])
 fg4.plot_graph()
 fg4.plot_graph_tot()
 
-fg4.data
+def get_counts(series):
+  X = series.tolist()
+  count = Counter(np.array(X))
+  tuple_list = count.most_common()
+  return tuple_list
 
-tot = np.zeros(12)
-for i in range(1,13):
-    month_df = fg4.data[fg4.data["SaleDate"].dt.month == i]
-    tot[i-1] = np.nansum(month_df["Salesprice"].values)
+most_commons = []
+for i in range(data.shape[1]):
+    most_commons.append(get_counts(data.iloc[:,i])[0:5])
 
-tot[0]
+most_commons
 
+
+SD1 = None #range(2014,2017) #[2017] #None #[2011]
+L1 = ["SOUTH SIOUX CITY NE"] #["ORLANDO, FL"]
+SN1 = None
+Y1 = [2005]
+MA1 = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MO1 = ["CL120 COLUMBIA"] #None #["COLUMBIA CL120"]
+
+
+fg3 = Filtered_graph(data,SaleDate_Year=SD1,Location=L1,SerialNumber=SN1,Year=Y1,Make=MA1,Model=MO1)
+fg3.plot_graph()
+fg3.plot_graph_tot("avg")
+
+get_counts(fg3.data[fg3.data["Location"] == "SOUTH SIOUX CITY NE"]["Model"])
+get_counts(fg3.data["Year"])
+
+
+SD1 = None #range(2014,2017) #[2017] #None #[2011]
+L1 = ["SOUTH SIOUX CITY NE"] #["ORLANDO, FL"]
+SN1 = None
+Y1 = [2005]
+MA1 = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MO1 = ["379"] #None #["COLUMBIA CL120"]
+
+
+fg3 = Filtered_graph(data,SaleDate_Year=SD1,Location=L1,SerialNumber=SN1,Year=Y1,Make=MA1,Model=MO1)
+fg3.plot_graph()
 
 # To do:
-# Total price of everything sold per month graph, average
-# Output how many datapoints are used to make the graph
+# Look at the most common datapoint category
+# Fix graph format
 # Look into binning the data in different ways: See quantity of each month perhaps.
 # Change the colour data points
 # Make a function to so you can look at all data in a certain state or certain area
 # Add the rest of the columns
 # Turn this into a GUI
 # Data analysis
+# Clean up data for this
+# Add temperature data
