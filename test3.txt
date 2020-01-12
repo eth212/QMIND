@@ -1,2 +1,0 @@
-  hello qmind
-added a second line

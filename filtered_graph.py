@@ -1,10 +1,17 @@
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 # cborn
+# time stamp to datetime.datetime
 import matplotlib.dates as mdates
 from matplotlib.dates import DateFormatter
-import numpy as np
-from collections import Counter
+import seaborn as sns
+matplotlib.__version__
+
+# data = pd.read_excel("../Tractor_Data_Inflation_Adjusted.xlsx", parse_dates=['SaleDate'])
+
+data = pd.read_excel("tractor/Tractor_Data_Inflation_Adjusted.xlsx")
+df = pd.DataFrame(data)
 
 class Filtered_graph:
     def __init__(self, data, SaleDate_Year=None, Location=None, SerialNumber=None, Year=None, Make=None, Model=None):
@@ -50,6 +57,7 @@ class Filtered_graph:
             self.Model = Model
             data = data[data["Model"].isin(Model)]
             self.title += "Model = " + str(Model) + ", "
+
 
         self.data = data
         self.Salesprice = data["Salesprice"].values
@@ -123,7 +131,8 @@ class Filtered_graph:
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
         ax.set(xlabel="SaleDate",
-        ylabel="Price ($)", title=self.title)
+        ylabel="Price ($)",
+        title=self.title)
 
         # self.pivot(index='SaleDate', columns='SalesPrice', values='count').plot(marker='o')
 
@@ -142,7 +151,9 @@ self = fg4
 # fg1.SaleDate
 # fg1.data
 
-fg2 = Filtered_graph(data, SaleDate_Year = [2009], Location = ["ORLANDO, FL"], SerialNumber = None, Year = None, Make=["FREIGHTLINER"], Model=["COLUMBIA CL120"])
+#df = df.drop(columns = [ 'Classification', 'Datasource', 'SerialNumber', 'Make', 'AuctionCompany','HP', 'Suspension','Sleeper', 'Trans', 'Spd', 'Axles','TransactionType', 'mNotes'])
+df = df.dropna()
+fg2 = Filtered_graph(data, SaleDate_Year = [2010], Location = None, SerialNumber = None, Year = None, Make=["FREIGHTLINER"])
 fg2.plot_graph()
 
 SD1 = [2015] #None #[2011]
@@ -203,8 +214,7 @@ fg3.plot_graph()
 # Look at the most common datapoint category
 # Fix graph format
 # Look into binning the data in different ways: See quantity of each month perhaps.
-# Change the colour data points
-# Make a function to so you can look at all data in a certain state or certain area
+#
 # Add the rest of the columns
 # Turn this into a GUI
 # Data analysis

@@ -1,6 +1,0 @@
-# AUCTION HOUSE DATA ANALYTICS
-
-## QMIND2019
-
-Let's get this bread
-
