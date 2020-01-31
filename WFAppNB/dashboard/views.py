@@ -8,17 +8,14 @@ import ast
 import numpy as np
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 from pytrends.request import TrendReq
-import plotly as pypip 
+import plotly as py
 from geopy import geocoders
-import chart_studio
-chart_studio.tools.set_credentials_file(username='jeremykulchyk', api_key='ZNb8x0IBYP7SCQFiaf9T')
+py.tools.set_credentials_file(username='jeremykulchyk', api_key='ZNb8x0IBYP7SCQFiaf9T')
 pytrend = TrendReq(hl='en-US', tz=360)
 gn = geocoders.GeoNames(username='13jjrk')
 
 # Dict of months
 MList = {1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'}
-
-cnxn = pyodbc.connect('DRIVER=FreeTDS;SERVER=localhost;PORT=1433;DATABASE=QMIND;UID=sa;PWD=Q1w2e3r4t5y6u7i8o9p0;TDS_Version=8.0;')
 
 # Load index.html on searching servername +'/dashboard/'
 def index(request):
@@ -191,19 +188,18 @@ def getData(request):
 
 		# Setup SQL database connection, which is powered by pydobc.
 		# NOTE: pyodbc was downloaded and its instructions were followed in order to access the database from my laptop, through any python program, through the same network.
-		#cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=Q1w2e3r4t5y6u7i8o9p0')
+		cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=britelite')
 
-		"""
+
 		# Use the user's selected category (which is the categories display name) to find the categories actual database name, which is under the column DutyTypeDesc in the below query
-		sql1 = "SELECT * FROM QMIND.dbo.DBDutyType where ParentDutyTypeID is null"
+		sql1 = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.DBDutyType where ParentDutyTypeID is null"
 		Data1 = pd.read_sql(sql1,cnxn)
 		print(Data1)
 		df = Data1.loc[Data1['DisplayName'] == Category]
 		Category = df['DutyTypeDesc'].iloc[0]
-		"""
 
 		# This section uses the below SQL variables to dynamically create a SQL query, based on the data selected from the dropdown menu
-		DB = "QMIND.dbo."
+		DB = "WFEFDataWarehouse_Product_2018_02_27.dbo."
 		SF = "SELECT * FROM "
 		W = " where "
 		D = "DUTYTYPE = '"
@@ -216,8 +212,8 @@ def getData(request):
 		sql = None
 
 		# The following 4 if statements work backwards to generate the correct SQL query statement.
-		#if Year == "":
-		sql = SF + DB + Category + W + D + Dutytype + E + A + MA + Make + E + A + M + Model + E
+		if Year == "":
+			sql = SF + DB + Category + W + D + Dutytype + E + A + MA + Make + E + A + M + Model + E
 		if Model == "":
 			sql = SF + DB + Category + W + D + Dutytype + E + A + MA + Make + E
 		if Make == "":
@@ -225,13 +221,9 @@ def getData(request):
 		if Dutytype == "":
 			sql = SF + DB + Category
 
-		#if Model != "" and Dutytype !== and Make != "":
-			#sql = SF + DB + Category + W + D + Dutytype + E + A + MA + Make + E + A + M + Model + E
-
 		# The following 2 if statements then extend the SQL statement if a year or year range is selected.
 		# Within each if statement, they differ by the dutytype being null valued, which requires a 'WHERE' to follow, or valued, which requires an 'AND' to follow since 'WHERE' is already present in the SQL query statement
 		if Year != "" and YearRangeEnd == "":
-			print(sql, W, Y, Year, E)
 			if Year != "" and Dutytype == "":
 				sql = sql + W + Y + Year + E
 			if Year != "" and Dutytype != "":
@@ -689,10 +681,10 @@ def updatetabledata(request):
 # Load categories into category dropdown list upon page loading
 def populatedropdowns(request):
 	if request.method == 'GET':
-		"""
+
 		# Access database table of categories
-		#cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=Q1w2e3r4t5y6u7i8o9p0')
-		sql = "SELECT * FROM QMIND.dbo.DBDutyType where ParentDutyTypeID is null"
+		cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=britelite')
+		sql = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.DBDutyType where ParentDutyTypeID is null"
 		print(sql)
 		Data = pd.read_sql(sql,cnxn)
 
@@ -710,14 +702,6 @@ def populatedropdowns(request):
 			DropDownItem = '<option value="%s">%s</option>' % (item, item)
 			DropDownListCat = DropDownListCat + DropDownItem
 
-		"""
-
-		# ADDED FOR QMIND TEAM
-		DropDownListCat = "<option value="">Select Category</option>"
-		DropDownItem = '<option value="Tractors">Tractors</option>'
-		DropDownListCat = DropDownListCat + DropDownItem
-		# ADDED FOR QMNID TEAM
-
 		data_details = {'0':DropDownListCat}
 
 		return JsonResponse(data_details)
@@ -731,11 +715,8 @@ def populatedropdownsCat(request):
 		Category = request.GET['Category']
 
 		# Access database table of categories
-		#cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=Q1w2e3r4t5y6u7i8o9p0')
-		#cnxn = pyodbc.connect('Driver=ODBC Driver 17 for SQL Server;Server=localhost;Database=DCMM;Port: 1433;UID=sa;PWD=Q1w2e3r4t5y6u7i8o9p0')
-
-		"""
-		sql = "SELECT * FROM QMIND.dbo.DBDutyType where ParentDutyTypeID is null"
+		cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=britelite')
+		sql = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.DBDutyType where ParentDutyTypeID is null"
 		Data1 = pd.read_sql(sql,cnxn)
 		print(Data1)
 
@@ -746,7 +727,7 @@ def populatedropdownsCat(request):
 		CatID = df['DutyTypeID'].iloc[0]
 
 		# Create SQL query to get selected categories table data
-		sql1 = "select * from QMIND.dbo.DBDutyType where ParentDutyTypeID='%s'" %CatID
+		sql1 = "select * from WFEFDataWarehouse_Product_2018_02_27.dbo.DBDutyType where ParentDutyTypeID='%s'" %CatID
 		Data1 = pd.read_sql(sql1,cnxn)
 		print(Data1)
 
@@ -759,17 +740,6 @@ def populatedropdownsCat(request):
 		for item in dfDuty:
 			DropDownItem = '<option value="%s">%s</option>' % (item, item)
 			DropDownListDuty = DropDownListDuty + DropDownItem
-		"""
-
-		# ADDED FOR QMIND TEAM
-		sql = "SELECT * FROM QMIND.dbo.Tractors"
-		Data1 = pd.read_sql(sql,cnxn)
-		print(list(set(Data1.DutyType.values)))
-
-		DropDownListDuty = "<option value="">Select Dutytype</option>"
-		for item in list(set(Data1.DutyType.values)):
-			DropDownItem = '<option value="%s">%s</option>' % (item, item)
-			DropDownListDuty = DropDownListDuty + DropDownItem
 
 		data_details = {'0':DropDownListDuty}
 
@@ -780,24 +750,20 @@ def populatedropdownsCat(request):
 def populatedropdownsDuty(request):
 	if request.method == 'GET':
 
-
 		# Get selected category and dutytype
 		Dutytype = request.GET['Dutytype']
 		Category = request.GET['Category']
-
-		"""
-		#cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=Q1w2e3r4t5y6u7i8o9p0')
+		cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=britelite')
 
 		# Using category display name, get categories ID name to access database
-		sql1 = "SELECT * FROM QMIND.dbo.DBDutyType where ParentDutyTypeID is null"
+		sql1 = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.DBDutyType where ParentDutyTypeID is null"
 		Data1 = pd.read_sql(sql1,cnxn)
 		print(Data1)
 		df = Data1.loc[Data1['DisplayName'] == Category]
 		Category = df['DutyTypeDesc'].iloc[0]
 
-		"""
 		# Get all data under specified dutytype and category
-		sql = "SELECT * FROM QMIND.dbo.[%s] where DUTYTYPE = '%s'" %(Category, Dutytype)
+		sql = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.[%s] where DUTYTYPE = '%s'" %(Category, Dutytype)
 		print(sql)
 		Data = pd.read_sql(sql,cnxn)
 
@@ -851,18 +817,17 @@ def populatedropdownsMake(request):
 		Dutytype = request.GET['Dutytype']
 		Category = request.GET['Category']
 		Make = request.GET['Make']
-		#cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=Q1w2e3r4t5y6u7i8o9p0')
+		cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=britelite')
 
-		"""
 		# Using category display name, get categories ID name to access database
-		sql1 = "SELECT * FROM QMIND.dbo.DBDutyType where ParentDutyTypeID is null"
+		sql1 = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.DBDutyType where ParentDutyTypeID is null"
 		Data1 = pd.read_sql(sql1,cnxn)
 		print(Data1)
 		df = Data1.loc[Data1['DisplayName'] == Category]
 		Category = df['DutyTypeDesc'].iloc[0]
-		"""
+
 		# Get all data under specified dutytype and category
-		sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MAKE = '%s'" %(Category, Dutytype, Make)
+		sql = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.%s where DUTYTYPE = '%s' and MAKE = '%s'" %(Category, Dutytype, Make)
 		print(sql)
 		Data = pd.read_sql(sql,cnxn)
 
@@ -907,25 +872,23 @@ def populatedropdownsModel(request):
 		Make = request.GET['Make']
 		Model = request.GET['Model']
 
-		"""
 		# Using category display name, get categories ID name to access database
-		#cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=britelite')
-		sql1 = "SELECT * FROM QMIND.dbo.DBDutyType where ParentDutyTypeID is null"
+		cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=britelite')
+		sql1 = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.DBDutyType where ParentDutyTypeID is null"
 		Data1 = pd.read_sql(sql1,cnxn)
 		print(Data1)
 		df = Data1.loc[Data1['DisplayName'] == Category]
 		Category = df['DutyTypeDesc'].iloc[0]
-		"""
 
 		# Handle user selection possibilities to create the proper SQL query
 		if Make == '' and Dutytype == '':
-			sql = "SELECT * FROM QMIND.dbo.%s where MODEL = '%s'" %(Category, Model)
+			sql = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.%s where MODEL = '%s'" %(Category, Model)
 		if Make == '' and Dutytype != '':
-			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s'" %(Category, Dutytype, Model)
+			sql = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s'" %(Category, Dutytype, Model)
 		if Make != '' and Dutytype == '':
-			sql = "SELECT * FROM QMIND.dbo.%s where MAKE = '%s' and MODEL = '%s'" %(Category, Make, Model)
+			sql = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.%s where MAKE = '%s' and MODEL = '%s'" %(Category, Make, Model)
 		if Make != '' and Dutytype != '':
-			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s' and MAKE = '%s'" %(Category, Dutytype, Model, Make)
+			sql = "SELECT * FROM WFEFDataWarehouse_Product_2018_02_27.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s' and MAKE = '%s'" %(Category, Dutytype, Model, Make)
 		print(sql)
 		Data = pd.read_sql(sql,cnxn)
 
@@ -947,3 +910,5 @@ def populatedropdownsModel(request):
 
 		return JsonResponse(data_details)
 	return render(request)
+
+	
