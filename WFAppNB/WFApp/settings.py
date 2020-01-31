@@ -22,7 +22,8 @@ MEDIA_ROOT = '/media/dashboard/'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
-
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = '=*nph%0%$=#4yw*nqeqv*01oa0w_5j1el^xxc_s(_o#-6ro5)$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -84,7 +85,12 @@ except:
 
 DATABASES = {
     'default': {
-
+        #'ENGINE': 'django.db.backends.mysql', 
+        #'NAME': 'WFEFDataWarehouse_Product_2018_02_27',
+        #'USER': 'sa',
+        #'PASSWORD': 'britelite',
+        #'HOST': '10.10.32.15',   # Or an IP Address that your DB is hosted on
+        #'PORT': '3306',
     }
 }
 
