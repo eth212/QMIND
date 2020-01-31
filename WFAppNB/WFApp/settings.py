@@ -85,12 +85,7 @@ except:
 
 DATABASES = {
     'default': {
-        #'ENGINE': 'django.db.backends.mysql', 
-        #'NAME': 'WFEFDataWarehouse_Product_2018_02_27',
-        #'USER': 'sa',
-        #'PASSWORD': 'britelite',
-        #'HOST': '10.10.32.15',   # Or an IP Address that your DB is hosted on
-        #'PORT': '3306',
+
     }
 }
 
