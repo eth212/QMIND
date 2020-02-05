@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 # cborn
@@ -7,11 +8,8 @@ import matplotlib.dates as mdates
 from matplotlib.dates import DateFormatter
 import seaborn as sns
 matplotlib.__version__
-
-# data = pd.read_excel("../Tractor_Data_Inflation_Adjusted.xlsx", parse_dates=['SaleDate'])
-
-data = pd.read_excel("tractor/Tractor_Data_Inflation_Adjusted.xlsx")
-df = pd.DataFrame(data)
+import os
+os.getcwd()
 
 class Filtered_graph:
     def __init__(self, data, SaleDate_Year=None, Location=None, SerialNumber=None, Year=None, Make=None, Model=None):
@@ -32,7 +30,7 @@ class Filtered_graph:
             list of strings to filter the product model
         '''
 
-        self.title = "Price of Every Item Filtered by: "
+        self.title = "Price of Every Item Filtered by "
         if(SaleDate_Year != None):
             self.SaleDate_Year = SaleDate_Year
             data = data[data["SaleDate"].dt.year.isin(SaleDate_Year)]
@@ -57,7 +55,8 @@ class Filtered_graph:
             self.Model = Model
             data = data[data["Model"].isin(Model)]
             self.title += "Model = " + str(Model) + ", "
-
+        if(self.title == "Price of Every Item Filtered by: "):
+            self.title = "Price of Every Item"
 
         self.data = data
         self.Salesprice = data["Salesprice"].values
@@ -114,7 +113,7 @@ class Filtered_graph:
         # ylabel="Total Price Sold ($)",
         # title=self.title)
 
-    def plot_graph(self):
+    def plot_graph(self, filename=None):
         # plt.plot(self.SaleDate, self.Salesprice, ".")
         # plt.xlabel("Time")
         # plt.ylabel("Price")
@@ -133,90 +132,75 @@ class Filtered_graph:
         ax.set(xlabel="SaleDate",
         ylabel="Price ($)",
         title=self.title)
+        if(filename != None):
+            plt.savefig(filename)
 
-        # self.pivot(index='SaleDate', columns='SalesPrice', values='count').plot(marker='o')
+data = pd.read_excel("../../../Tractor_Data_Inflation_Adjusted.xlsx")
+savefig_path = '../figures/'
 
-# data = pd.read_excel("../Tractor_Data_Inflation_Adjusted.xlsx", parse_dates=['SaleDate'])
-data = pd.read_excel("../Tractor_Data_Inflation_Adjusted.xlsx")
-data
+SD = None #range(2014,2017) #[2017] #None #[2011]
+L = None #["ORLANDO, FL"]
+SN = None
+Y = None
+MA = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MO = None #None #["COLUMBIA CL120"]
 
-fg4 = Filtered_graph(data, range(2012,2017)) # , Location = ["ORLANDO, FL"])
-fg4.plot_graph_tot("avg")
-fg4.plot_graph_tot()
+# Plot the price of every item in the db
+fg1 = Filtered_graph(data,SaleDate_Year=SD,Location=L,SerialNumber=SN,Year=Y,Make=MA,Model=MO)
+filename = savefig_path + fg1.title
+fg1.plot_graph(filename)
 
+###############################################################################
+# Plot the price of every item each individual sale_date year
 
-self = fg4
-# fg1 = Filtered_graph(data, SaleDate_Year = [2008, 2009], Location = ["PELZER, SC"], Year = [2005])
-# fg1.plot_graph()
-# fg1.SaleDate
-# fg1.data
+SD = None #range(2014,2017) #[2017] #None #[2011]
+L = None #["ORLANDO, FL"]
+SN = None
+Y = None
+MA = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MO = None #None #["COLUMBIA CL120"]
 
-#df = df.drop(columns = [ 'Classification', 'Datasource', 'SerialNumber', 'Make', 'AuctionCompany','HP', 'Suspension','Sleeper', 'Trans', 'Spd', 'Axles','TransactionType', 'mNotes'])
-df = df.dropna()
-fg2 = Filtered_graph(data, SaleDate_Year = [2010], Location = None, SerialNumber = None, Year = None, Make=["FREIGHTLINER"])
-fg2.plot_graph()
+for i in range(1996, 2021):
+    SD = [i]
+    fg1 = Filtered_graph(data,SaleDate_Year=SD,Location=L,SerialNumber=SN,Year=Y,Make=MA,Model=MO)
+    filename = savefig_path + fg1.title
+    fg1.plot_graph(filename)
 
-SD1 = [2015] #None #[2011]
-L1 = None #["ORLANDO, FL"]
-SN1 = None
-Y1 = None
-MA1 = ["FREIGHTLINER"] #None #["FREIGHTLINER"]
-MO1 = ["COLUMBIA CL120"] #None #["COLUMBIA CL120"]
+###############################################################################
+# Plot the price of every Freightliner item each individual sale_date year
 
-fg3 = Filtered_graph(data,SaleDate_Year=SD1,Location=L1,SerialNumber=SN1,Year=Y1,Make=MA1,Model=MO1)
-fg3.plot_graph()
+SD = None #range(2014,2017) #[2017] #None #[2011]
+L = None #["ORLANDO, FL"]
+SN = None
+Y = None
+MA = ["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MO = None #None #["COLUMBIA CL120"]
 
-fg4 = Filtered_graph(data, [2015])
-fg4.plot_graph()
-fg4.plot_graph_tot()
+for i in range(1996, 2021):
+    SD = [i]
+    fg1 = Filtered_graph(data,SaleDate_Year=SD,Location=L,SerialNumber=SN,Year=Y,Make=MA,Model=MO)
+    filename = savefig_path + "1_" + fg1.title
+    fg1.plot_graph(filename)
 
-def get_counts(series):
-  X = series.tolist()
-  count = Counter(np.array(X))
-  tuple_list = count.most_common()
-  return tuple_list
+###############################################################################
+# Plot the price of every "CL120 COLUMBIA" model for each individual sale_date years
+SD = None #range(2014,2017) #[2017] #None #[2011]
+L = None #["ORLANDO, FL"]
+SN = None
+Y = None
+MA = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MO = ["CL120 COLUMBIA"] #["COLUMBIA CL120"]
 
-most_commons = []
-for i in range(data.shape[1]):
-    most_commons.append(get_counts(data.iloc[:,i])[0:5])
+for i in range(1996, 2021):
+    SD = [i]
+    fg1 = Filtered_graph(data,SaleDate_Year=SD,Location=L,SerialNumber=SN,Year=Y,Make=MA,Model=MO)
+    filename = savefig_path + "2_" + fg1.title
+    fg1.plot_graph(filename)
 
-most_commons
-
-
-SD1 = None #range(2014,2017) #[2017] #None #[2011]
-L1 = ["SOUTH SIOUX CITY NE"] #["ORLANDO, FL"]
-SN1 = None
-Y1 = [2005]
-MA1 = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
-MO1 = ["CL120 COLUMBIA"] #None #["COLUMBIA CL120"]
-
-
-fg3 = Filtered_graph(data,SaleDate_Year=SD1,Location=L1,SerialNumber=SN1,Year=Y1,Make=MA1,Model=MO1)
-fg3.plot_graph()
-fg3.plot_graph_tot("avg")
-
-get_counts(fg3.data[fg3.data["Location"] == "SOUTH SIOUX CITY NE"]["Model"])
-get_counts(fg3.data["Year"])
-
-
-SD1 = None #range(2014,2017) #[2017] #None #[2011]
-L1 = ["SOUTH SIOUX CITY NE"] #["ORLANDO, FL"]
-SN1 = None
-Y1 = [2005]
-MA1 = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
-MO1 = ["379"] #None #["COLUMBIA CL120"]
-
-
-fg3 = Filtered_graph(data,SaleDate_Year=SD1,Location=L1,SerialNumber=SN1,Year=Y1,Make=MA1,Model=MO1)
-fg3.plot_graph()
-
+###############################################################################
 # To do:
-# Look at the most common datapoint category
-# Fix graph format
-# Look into binning the data in different ways: See quantity of each month perhaps.
-#
-# Add the rest of the columns
-# Turn this into a GUI
-# Data analysis
-# Clean up data for this
-# Add temperature data
+# - Histogram the data in many small bins... maybe like 100 per year
+# (make bin size) changeable by the user. Then look at average price of each bin
+# total price of each bin, etc? So basically the user sets the range and the number
+# of bins per range.
+# - Look at correlations between variables?
