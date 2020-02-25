@@ -10,7 +10,8 @@ from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 from pytrends.request import TrendReq
 import plotly as py
 from geopy import geocoders
-py.tools.set_credentials_file(username='jeremykulchyk', api_key='ZNb8x0IBYP7SCQFiaf9T')
+import chart_studio
+chart_studio.tools.set_credentials_file(username='jeremykulchyk', api_key='ZNb8x0IBYP7SCQFiaf9T')
 pytrend = TrendReq(hl='en-US', tz=360)
 gn = geocoders.GeoNames(username='13jjrk')
 
@@ -910,5 +911,3 @@ def populatedropdownsModel(request):
 
 		return JsonResponse(data_details)
 	return render(request)
-
-	
