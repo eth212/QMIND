@@ -135,7 +135,67 @@ class Filtered_graph:
         if(filename != None):
             plt.savefig(filename)
 
-data = pd.read_excel("../../../Tractor_Data_Inflation_Adjusted.xlsx")
+    def plot_hist(self, hist_type="counts", numBins=None, filename=None):
+        '''
+        Makes a histogram with numBins number of bins.
+        hist_type = "counts":
+            counts the number of items sold in each bin
+        hist_type = "total":
+            sums the total price of each bin
+        hist_type = "average":
+            takes the average value of each bin
+
+            - more to be added later
+        '''
+        if(len(self.SaleDate) == 0):
+            print("No data selected")
+            return
+        self.numBins = numBins
+        fig, ax = plt.subplots(1,1)
+        hist_title = ""
+        if(hist_type == "counts"):
+            self.n, self.bins, self.patches = ax.hist(self.SaleDate,bins=numBins)
+            hist_title += "Total Counts"
+            hist_ylabel = "Counts"
+        elif(hist_type == "total"):
+            self.n, self.bins, self.patches = ax.hist(self.SaleDate,bins=numBins,weights=self.Salesprice)
+            hist_title += "Total Price"
+            hist_ylabel = "Price ($)"
+        elif(hist_type == "average"):
+            # self.histCounts, self.bin_edgesCounts = np.histogram(self.SaleDate,bins=numBins)
+            # self.histTotal, self.bin_edgesTotal = np.histogram(self.SaleDate, bins=numBins, weights=self.Salesprice)
+            # with numpy.errstate(divide='ignore'):
+            #     result = numerator / denominator
+            #     self.histAvg = np.divide(self.histTotal, self.histCounts)
+            #     self.histAvg[self.histCounts == 0] = 0
+            # plt.hist(self.bin_edgesCounts[:-1], self.bin_edgesCounts, weights=self.histAvg)
+            hist_title += "Average Price"
+            hist_ylabel = "Price ($)"
+            fig1, ax1 = plt.subplots(1,1)
+            self.nCounts, self.binsCounts, self.patchesCounts = ax1.hist(self.SaleDate,bins=numBins)
+            plt.close(fig1)
+            fig2, ax2 = plt.subplots(1,1)
+            self.nTotal, self.binsTotal, self.patchesTotal = ax2.hist(self.SaleDate, bins=numBins, weights=self.Salesprice)
+            plt.close(fig2)
+            self.nAvg = np.divide(self.nTotal, self.nCounts, out = np.zeros_like(self.nTotal), where=self.nCounts!=0)
+            ax.hist(self.binsCounts[:-1], self.binsCounts, weights=self.nAvg)
+
+
+        locator = mdates.AutoDateLocator()
+        formatter = mdates.ConciseDateFormatter(locator)
+        ax.xaxis.set_major_locator(locator)
+        ax.xaxis.set_major_formatter(formatter)
+        ax.set(xlabel="SaleDate",
+        ylabel=hist_ylabel,title = hist_title + " (numBins = " + str(numBins) + ")")
+        if(filename != None):
+            plt.savefig(filename)
+
+dataOG = pd.read_excel("../../../Tractor_Data_Inflation_Adjusted.xlsx")
+# No support yet for the following features:
+data = dataOG.drop(columns=["Unnamed: 0", "Classification", "Datasource", "AuctionCompany", "Mileage", "Engine", "HP", "Suspension", "Sleeper", "Trans", "Spd", "Axles", "TransactionType", "mNotes", "Adjusted_Salesprice"])
+# Could add Mileage > const feature.
+# No support yet for any nan values. Rows which have nan values are dropped
+data = data.dropna() # We only lose 154843 -> 150938 rows here, it's no worries at the moment
 savefig_path = '../figures/'
 savefiles_path = '../files/'
 
@@ -199,9 +259,65 @@ for i in range(1996, 2021):
     fg1.plot_graph(filename)
 
 ###############################################################################
+# Histogram routine:
+SD = None #range(2014,2017) #[2017] #None #[2011]
+L = None #["ORLANDO, FL"]
+SN = None
+Y = [1999]
+MA = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MO =  ["FLD13264T CLASSIC XL"] #["COLUMBIA CL120"] #["CLASSIC XL"] #None #None
+
+# Plot the price of every item in the db
+fg1 = Filtered_graph(data,SaleDate_Year=SD,Location=L,SerialNumber=SN,Year=Y,Make=MA,Model=MO)
+fg1.plot_hist(hist_type = "counts", numBins=50)
+fg1.plot_hist(hist_type = "total", numBins = 100)
+
+fg1.plot_hist(hist_type = "average", numBins=100)
+
+
+ SD = None #range(2014,2017) #[2017] #None #[2011]
+L = None #["ORLANDO, FL"]
+SN = None
+Y = [2000]
+MA = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MO =  ["FLD13264T CLASSIC XL"] #["COLUMBIA CL120"] #["CLASSIC XL"] #None #None
+
+# Plot the price of every item in the db
+fg1 = Filtered_graph(data,SaleDate_Year=SD,Location=L,SerialNumber=SN,Year=Y,Make=MA,Model=MO)
+fg1.plot_hist(hist_type = "counts", numBins=100)
+fg1.plot_hist(hist_type = "total", numBins = 100)
+
+fg1.plot_hist(hist_type = "average", numBins=100)
+np.savetxt("../files/hist_test.csv", fg1.SaleDate, delimiter=",")
+fg1.data.to_csv("../files/hist_test.csv", columns=["SaleDate"])
+fg1.data.to_csv("/Users/Kyle/Documents/Queens/QMIND/QMIND/WFAppNB/dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate"])
+
+
+SD = None #range(2014,2017) #[2017] #None #[2011]
+L = ["JUSTIN TX"] # None #["ORLANDO, FL"]
+SN = None
+Y = [2000]
+MA = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MO =  ["FLD13264T CLASSIC XL"] #["COLUMBIA CL120"] #["CLASSIC XL"] #None #None
+
+# Plot the price of every item in the db
+fg1 = Filtered_graph(data,SaleDate_Year=SD,Location=L,SerialNumber=SN,Year=Y,Make=MA,Model=MO)
+fg1.plot_hist(hist_type = "counts", numBins=100)
+fg1.plot_hist(hist_type = "total", numBins = 100)
+
+fg1.plot_hist(hist_type = "average", numBins=100)
+
+
+
 # To do:
 # - Histogram the data in many small bins... maybe like 100 per year
 # (make bin size) changeable by the user. Then look at average price of each bin
-# total price of each bin, etc? So basically the user sets the range and the number
-# of bins per range.
+# total price of each bin, counts of each bin, max and min of each bin, etc?
+# So basically the user sets the range and the number of bins per range with sliders.
 # - Look at correlations between variables?
+
+# Look at the yearly trends in average price now...
+
+# Use different colours on the hisrogram to show the high price items, medium and low price items or something...
+
+# Could add select by Mileage > const feature.

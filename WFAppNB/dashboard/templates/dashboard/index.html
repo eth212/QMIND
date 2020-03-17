@@ -242,16 +242,28 @@ $('#get_results').click(function() {
 		Plotly.purge(myDiv11);
 		Plotly.purge(myDiv12);
 		Plotly.purge(myDiv);
+        Plotly.purge(myDiv_hist);
 		
 		// Get data from user selection
-		var IncludeMileage = $('#IncludeMileage').is(":checked");
-    	var Cat = $('#Category').val();
-    	var Duty = $('#Dutytype').val();
-    	var Make = $('#Make').val();
-    	var Model = $('#Model').val();
-    	var Year = $('#Year').val();
-    	var YearRangeEnd = $('#YearRangeEnd').val();
-    	
+        var IncludeMileage = $('#IncludeMileage').is(":checked");
+        var Cat = $('#Category').val();
+        var Duty = $('#Dutytype').val();
+        var Make = $('#Make').val();
+        var Model = $('#Model').val();
+        var Year = $('#Year').val();
+        var YearRangeEnd = $('#YearRangeEnd').val();
+
+<!--        console.log(IncludeMileage, Cat, Duty, Make, Model, Year, YearRangeEnd)-->
+
+        // Added by Kyle
+<!--        var IncludeMileage = true-->
+<!--        var Cat = "Tractors"-->
+<!--        var Duty = "Conventional"-->
+<!--        var Make = "CHEVROLET"-->
+<!--        var Model = ""-->
+<!--        var Year = ""-->
+<!--        var YearRangeEnd = ""-->
+
     	// Display console message
     	$('#console').animate({opacity:0},function(){
         	$(this).text("Fetching location data from database...")
@@ -359,6 +371,100 @@ $('#get_results').click(function() {
     };
 
     Plotly.plot(myDiv, data2, layout, {showLink: false});
+
+});
+
+// Histogram Plots
+Plotly.d3.csv("{% static 'dashboard/csv/HistData.csv' %}", function(err, rows){
+
+function unpack(rows, key) {
+return rows.map(function(row) { return row[key]; });
+}
+function unpack1(rows, key) {
+return rows.map(function(row) { return [row[''],' ' + row[key]]; });
+}
+
+//df = pd.read_csv("{% static 'dashboard/csv/MapData.csv' %}")
+//console.log(df.head())
+
+<!--var scl = [[0,'rgb(128,0,0)'],[0.35,'rgb(178,34,34)'],[0.5,'rgb(205,92,92)'], [0.6,'rgb(255,99,71)'],[0.7,'rgb(255,160,122)'],[1,'rgb(233,150,122)']];-->
+<!---->
+<!--var data2 = [{-->
+<!--type:'scattergeo',-->
+<!--locationmode: 'USA-states',-->
+<!--lon: unpack(rows, 'long'),-->
+<!--lat: unpack(rows, 'lat'),-->
+<!--hoverinfo: "text",-->
+<!--text: unpack1(rows, TableDataRankBy),-->
+<!--mode: 'markers',-->
+<!--marker: {-->
+<!--size: 20,-->
+<!--opacity: 0.8,-->
+<!--reversescale: true,-->
+<!--autocolorscale: false,-->
+<!--symbol: 'circle',-->
+<!--line: {-->
+<!--width: 1,-->
+<!--color: 'rgb(255,255,255)'-->
+<!--},-->
+<!--colorscale: scl,-->
+<!--cmin: 0,-->
+<!--color: unpack(rows, TableDataRankBy),-->
+<!--colorbar: {-->
+<!--title: 'Locations ranked by ' + TableDataRankBy-->
+<!--}-->
+<!--}-->
+<!--}];-->
+<!---->
+<!---->
+<!--var layout = {-->
+<!--title: 'Asset Selling Locations',-->
+<!--colorbar: true,-->
+<!--geo: {-->
+<!--scope: 'usa',-->
+<!--projection: {-->
+<!--type: 'albers usa'-->
+<!--},-->
+<!--showland: true,-->
+<!--landcolor: 'rgb(250,250,250)',-->
+<!--subunitcolor: 'rgb(217,217,217)',-->
+<!--countrycolor: 'rgb(217,217,217)',-->
+<!--countrywidth: 0.5,-->
+<!--subunitwidth: 0.5-->
+<!--}-->
+<!--};-->
+
+<!--Plotly.plot(myDiv_hist, data2, layout, {showLink: false});-->
+
+var x = [];
+for (var i = 0; i < 500; i ++) {
+x[i] = Math.random();
+}
+
+
+
+var trace = {
+x: unpack(rows, 'SaleDate'),
+<!--x: x,-->
+type: 'histogram',
+
+autobinx: false,
+xbins: {
+<!--end: 4,-->
+<!--size: 4980000000000000-->
+size: 86400000.0
+<!--size: 0.01-->
+<!--start: -3.2-->
+}
+
+};
+var data = [trace];
+<!--Plotly.newPlot('myDiv_hist', data);-->
+Plotly.plot(myDiv_hist, data);
+
+
+
+
 
 });
 		
@@ -859,14 +965,42 @@ thead {
 		</div>
     </div>
 </div>
-</div>   
+</div>
+
+<!-- Histogram -->
+<h2 class="Magenta" >Histogram <br><p class="CoolGrayDark" style="font-size: 15px;"></p></h2>
+<div class="row">
+<div class="col-lg-12">
+<div style="border-color:#AE2573 !important;color:black;" class="panel">
+<div style="background-color: #AE2573; color:white" class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> Visualize the above location data
+<div class="pull-right">
+<div class="btn-group">
+<select id="HistDataRankBy" class="dropdown-select">
+<option value="AvgPrice">Sort by Average Price</option>
+<option value="TotalRev">Sort by Total Revenue</option>
+<option value="AvgMil">Sort by Average Mileage</option>
+<option value="AvgAge">Sort by Average Age</option>
+<option value="HighSale">Sort by Highest Sale</option>
+<option value="LowSale">Sort by Lowest Sale</option>
+<option value="SoldAssets">Sort by Sold Assets</option>
+</select>
+</div>
+</div>
+</div>
+<div class="panel-body">
+<div id="myDiv_hist"></div>
+</div>
+</div>
+</div>
+</div>
+
 
 <!-- Google Search Trends -->
 <h2 class="Orange" >Google Search Trends<br><p class="CoolGrayDark" style="font-size: 15px;"></p></h2>
 <div class="row">
 	<div class="col-lg-12">
     	<div style="border-color:#ED8800 !important;color:black;" class="panel">
-        	<div style="background-color: #ED8800; color:white" class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> Pick and choose an appropriate Google search term to understand the apetite for assets in each state, and over time</div>
+        	<div style="background-color: #ED8800; color:white" class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> Pick and choose an appropriate Google search term to understand the appetite for assets in each state, and over time</div>
         <div class="panel-body">
         <div id="myDiv11"></div>
         <div id="myDiv12"></div>
@@ -881,6 +1015,8 @@ thead {
     </div>
 </div>
 </div>
+
+
 
 
 

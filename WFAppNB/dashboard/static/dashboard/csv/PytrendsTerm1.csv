@@ -1,51 +1,51 @@
-geoName,used freightliner,code
-Alabama,100,AL
-Alaska,0,AK
-Arizona,0,AZ
-Arkansas,0,AR
-California,60,CA
-Colorado,0,CO
-Connecticut,0,CT
-Delaware,0,DE
-Florida,61,FL
-Georgia,98,GA
-Hawaii,0,HI
-Idaho,0,ID
-Illinois,72,IL
-Indiana,70,IN
-Iowa,0,IA
-Kansas,0,KS
-Kentucky,0,KY
-Louisiana,0,LA
-Maine,0,ME
-Maryland,0,MD
-Massachusetts,0,MA
-Michigan,58,MI
-Minnesota,0,MN
-Mississippi,0,MS
-Missouri,0,MO
-Montana,0,MT
-Nebraska,0,NE
-Nevada,0,NV
-New Hampshire,0,NH
-New Jersey,73,NJ
-New Mexico,0,NM
-New York,93,NY
-North Carolina,78,NC
-North Dakota,0,ND
-Ohio,68,OH
-Oklahoma,0,OK
-Oregon,0,OR
-Pennsylvania,66,PA
-Rhode Island,0,RI
-South Carolina,59,SC
-South Dakota,0,SD
-Tennessee,67,TN
-Texas,87,TX
-Utah,0,UT
-Vermont,0,VT
-Virginia,58,VA
-Washington,0,WA
-West Virginia,0,WV
-Wisconsin,0,WI
-Wyoming,0,WY
+geoName,used chevrolet,code
+Alabama,87,AL
+Alaska,30,AK
+Arizona,40,AZ
+Arkansas,74,AR
+California,25,CA
+Colorado,28,CO
+Connecticut,34,CT
+Delaware,49,DE
+Florida,40,FL
+Georgia,61,GA
+Hawaii,16,HI
+Idaho,36,ID
+Illinois,34,IL
+Indiana,61,IN
+Iowa,69,IA
+Kansas,48,KS
+Kentucky,68,KY
+Louisiana,100,LA
+Maine,37,ME
+Maryland,39,MD
+Massachusetts,23,MA
+Michigan,65,MI
+Minnesota,41,MN
+Mississippi,87,MS
+Missouri,56,MO
+Montana,42,MT
+Nebraska,41,NE
+Nevada,26,NV
+New Hampshire,33,NH
+New Jersey,20,NJ
+New Mexico,52,NM
+New York,29,NY
+North Carolina,64,NC
+North Dakota,80,ND
+Ohio,60,OH
+Oklahoma,77,OK
+Oregon,29,OR
+Pennsylvania,42,PA
+Rhode Island,29,RI
+South Carolina,71,SC
+South Dakota,34,SD
+Tennessee,66,TN
+Texas,55,TX
+Utah,24,UT
+Vermont,40,VT
+Virginia,48,VA
+Washington,32,WA
+West Virginia,96,WV
+Wisconsin,43,WI
+Wyoming,33,WY

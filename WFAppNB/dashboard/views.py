@@ -555,6 +555,15 @@ def getData(request):
 		DFrame1 = pd.DataFrame(Locs).T
 		DFrame1.to_csv("dashboard/static/dashboard/csv/MapData.csv")
 		
+		# Added by Kyle
+		#print(sql)
+		Data = pd.read_sql(sql,cnxn)
+		#print(Data.head())
+		#print(Data.columns)
+		Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate"])
+		
+
+        
 		# Save the Locs dictionary to Locs.txt to give ability to pull this data from index.html
 		text_file = open("dashboard/static/dashboard/csv/Locs.txt", "w")
 		text_file.write("%s" % str(Locs))
