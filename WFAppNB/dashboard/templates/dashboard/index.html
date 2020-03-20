@@ -246,6 +246,7 @@ $('#get_results').click(function() {
 		
 		// Get data from user selection
         var IncludeMileage = $('#IncludeMileage').is(":checked");
+        var UseTable = $('#UseTable').is(":checked");
         var Cat = $('#Category').val();
         var Duty = $('#Dutytype').val();
         var Make = $('#Make').val();
@@ -271,7 +272,7 @@ $('#get_results').click(function() {
 			});
 			
      	// Send data to views.py/getData()
-      	$.get('/dashboard/getData', {'IncludeMileage':IncludeMileage,'YearRangeEnd':YearRangeEnd,'Cat': Cat,'Duty': Duty, 'Make': Make, 'Model':Model,'Year':Year}, function(data) {
+        $.get('/dashboard/getData', {'IncludeMileage':IncludeMileage,'UseTable':UseTable, 'YearRangeEnd':YearRangeEnd,'Cat': Cat,'Duty': Duty, 'Make': Make, 'Model':Model,'Year':Year}, function(data) {
       	
       	// Check Error string and deal with errors as necessary
       	var Err = data['Error']
@@ -873,6 +874,7 @@ thead {
       <div class="row-sm-2 Teal">Year Range (Optional)<br>To: <select id="YearRangeEnd" class="dropdown-select"></select></div><br><br>
       <div class="row-sm-2 Teal"><p style="color:white">Data must include:</p>
       	<input checked id="IncludeMileage" type="checkbox" name="Hours" value="Hours"> Mileage/hours<br>
+        <input checked id="UseTable" type="checkbox" name="QuickMode" value="QuickMode">Select if you want to update the table (can be slow)<br>
       </div>
     </div>
     <div class="row" style="padding: 10px;">
