@@ -275,12 +275,12 @@ fg1.plot_hist(hist_type = "total", numBins = 100)
 fg1.plot_hist(hist_type = "average", numBins=100)
 
 
- SD = None #range(2014,2017) #[2017] #None #[2011]
+SD = None #range(2014,2017) #[2017] #None #[2011]
 L = None #["ORLANDO, FL"]
 SN = None
-Y = [2000]
+Y = [2007]
 MA = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
-MO =  ["FLD13264T CLASSIC XL"] #["COLUMBIA CL120"] #["CLASSIC XL"] #None #None
+MO =  ["CL120 COLUMBIA"] #["FLD13264T CLASSIC XL"] #["COLUMBIA CL120"] #["CLASSIC XL"] #None #None
 
 # Plot the price of every item in the db
 fg1 = Filtered_graph(data,SaleDate_Year=SD,Location=L,SerialNumber=SN,Year=Y,Make=MA,Model=MO)

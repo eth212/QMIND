@@ -575,7 +575,7 @@ def getData(request):
 		Data = pd.read_sql(sql,cnxn)
 		#print(Data.head())
 		#print(Data.columns)
-		Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate"])
+		Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice"])
 
 
 		# Generate an HTML string that says how many assets are included and filtered out

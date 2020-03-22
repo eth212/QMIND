@@ -376,6 +376,9 @@ $('#get_results').click(function() {
 });
 
 // Histogram Plots
+
+var HistDataRankBy = $('#HistDataRankBy').val();
+
 Plotly.d3.csv("{% static 'dashboard/csv/HistData.csv' %}", function(err, rows){
 
 function unpack(rows, key) {
@@ -442,18 +445,20 @@ for (var i = 0; i < 500; i ++) {
 x[i] = Math.random();
 }
 
-
+<!--Milliseconds that make one bin per day. If you want one bin per year do dailyBins*365-->
+var dailyBins = 86400000.0
 
 var trace = {
+histfunc: HistDataRankBy,
 x: unpack(rows, 'SaleDate'),
+y: unpack(rows, 'SalesPrice'),
 <!--x: x,-->
 type: 'histogram',
-
 autobinx: false,
 xbins: {
 <!--end: 4,-->
 <!--size: 4980000000000000-->
-size: 86400000.0
+size: dailyBins*14
 <!--size: 0.01-->
 <!--start: -3.2-->
 }
@@ -462,9 +467,6 @@ size: 86400000.0
 var data = [trace];
 <!--Plotly.newPlot('myDiv_hist', data);-->
 Plotly.plot(myDiv_hist, data);
-
-
-
 
 
 });
@@ -572,6 +574,15 @@ $("#MapDataRankBy").change(function () {
         	$(this).text("Updating Map Data")
             .animate({opacity:1});  
 		});
+        
+// Added by Kyle: (What are these lines doing exactly?)
+// Update Map data upon changing sort method
+$("#HistDataRankBy").change(function () {
+var HistDataRankBy = $('#HistDataRankBy').val();
+<!--$('#console').animate({opacity:0},function(){-->
+<!--$(this).text("Updating Map Data")-->
+<!--.animate({opacity:1});-->
+});
 	
     Plotly.d3.csv("{% static 'dashboard/csv/MapData.csv' %}", function(err, rows){
 
@@ -979,13 +990,11 @@ thead {
 <div class="pull-right">
 <div class="btn-group">
 <select id="HistDataRankBy" class="dropdown-select">
-<option value="AvgPrice">Sort by Average Price</option>
-<option value="TotalRev">Sort by Total Revenue</option>
-<option value="AvgMil">Sort by Average Mileage</option>
-<option value="AvgAge">Sort by Average Age</option>
-<option value="HighSale">Sort by Highest Sale</option>
-<option value="LowSale">Sort by Lowest Sale</option>
-<option value="SoldAssets">Sort by Sold Assets</option>
+<option value="avg">Average Price</option>
+<option value="sum">Total Revenue</option>
+<option value="count">Number of Sales</option>
+<option value="max">Max Value</option>
+<option value="min">Min Value</option>
 </select>
 </div>
 </div>
