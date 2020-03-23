@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+  integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+  crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+  integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+  crossorigin=""></script>
+  <!-- <script type="text/javascript" src="us-states.js"></script> -->
+
+  </script>
+
+  <style>
+    #maptest = {
+      height: 180px;
+    }
+  </style>
+</head>
+
+<body>
+<div id="maptest" style="width: 700px; height: 400px;"></div>
+
+<script>
+// loading in us_states geoJSON from views.py
+var statesData = {{ us_states | safe }};
+
+// function to get choropleth colour from input
+function getColour(d) {
+    return d > 5000 ? '#800026' :
+           d > 2500  ? '#BD0026' :
+           d > 1000  ? '#E31A1C' :
+           d > 500  ? '#FC4E2A' :
+           d > 100   ? '#FD8D3C' :
+           d > 0   ? '#FEB24C' :
+                      '#FFFFFF';
+}
+
+// function that uses getColour to get choropleth colour for state saleCount
+function style(feature) {
+    return {
+        fillColor: getColour(feature.properties.saleCount),
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+    };
+}
+
+// creating map
+  var map = L.map('maptest').setView([37.8, -96], 4);
+  L.tileLayer('https://tile.openstreetmap.be/osmbe/{z}/{x}/{y}.png', {
+    attribution:
+        '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors' +
+        ', Tiles courtesy of <a href="https://geo6.be/">GEO-6</a>',
+    maxZoom: 18
+}).addTo(map);
+L.geoJson(statesData).addTo(map);
+L.geoJson(statesData, {style: style}).addTo(map);
+</script>
+</body>
