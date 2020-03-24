@@ -28,15 +28,7 @@
     <div id="map"></div>
 
     <script>
-
-      // US Boundaries 
-      var maxBounds = [
-      [5.499550, -167.276413], //Southwest
-      [83.162102, -52.233040]  //Northeast
-      ];
-
       var map = L.map("map").setView([48, -102],4);
-      L.map.setView([35.126411,33.429859], 9).setMaxBounds(bounds);
 
       L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
         attribution:
@@ -62,7 +54,7 @@
         [21, -102],
     ]).addTo(map);
 
-    polygon.bindPopup("<b> Hey THere </b><br>").openPopup();
+    polygon.bindPopup("<b> This is just a test </b><br>").openPopup();
 
 
 
