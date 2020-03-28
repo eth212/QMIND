@@ -7,10 +7,10 @@ def map(request):
     df = pd.read_excel("map/static/map/tractor_data.xlsx")
     locations = np.array(df['Location'].dropna().tolist())      #getting locations into np array with no NaN values
 
-    otherData = {'Make': df['Make'].dropna().tolist(), 'Model': df['Model'].dropna().tolist(), 'Location': df['Location'].dropna().tolist(),
+    otherData = {'Make': df['Make'].dropna().tolist(), 'Model': df['Model'].dropna().tolist(), 'Location': df['Location'].dropna().tolist(),        #getting other data for maps
                     'SaleDate': df['SaleDate'].dropna().tolist(), 'Salesprice': df['Salesprice'].dropna().tolist(), 'Adjusted_Salesprice': df['Adjusted_Salesprice'].dropna().tolist()}
 
-    otherData['SaleDate'] = [str(i) for i in otherData['SaleDate']]
+    otherData['SaleDate'] = [str(i) for i in otherData['SaleDate']]     #turning datetimes into strs
 
     #if state code is legal, add it to its respective count in countDict
     countDict = {}
