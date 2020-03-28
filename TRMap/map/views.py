@@ -7,6 +7,11 @@ def map(request):
     df = pd.read_excel("map/static/map/tractor_data.xlsx")
     locations = np.array(df['Location'].dropna().tolist())      #getting locations into np array with no NaN values
 
+    otherData = {'Make': df['Make'].dropna().tolist(), 'Model': df['Model'].dropna().tolist(), 'Location': df['Location'].dropna().tolist(),
+                    'SaleDate': df['SaleDate'].dropna().tolist(), 'Salesprice': df['Salesprice'].dropna().tolist(), 'Adjusted_Salesprice': df['Adjusted_Salesprice'].dropna().tolist()}
+
+    otherData['SaleDate'] = [str(i) for i in otherData['SaleDate']]
+
     #if state code is legal, add it to its respective count in countDict
     countDict = {}
     legalStates = ['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL',
@@ -20,8 +25,7 @@ def map(request):
                 countDict[locations[i][-2:]] += 1
             else:
                 countDict[locations[i][-2:]] = 1
-    print('countDict = ', countDict,'\n')
-    print(sorted(countDict.values()))
+
     # loading geoJSON data of us states
     with open("map/static/map/us-states.json") as geoJSON:
         us_states = json.load(geoJSON)
@@ -34,4 +38,4 @@ def map(request):
         except KeyError:
             continue
 
-    return render(request, 'map/index.html', context={'us_states' : json.dumps(us_states)})
+    return render(request, 'map/index.html', context={'us_states' : json.dumps(us_states), 'other_data': json.dumps(otherData)})
