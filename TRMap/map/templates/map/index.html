@@ -24,7 +24,7 @@
 // loading in us_states geoJSON from views.py
 var statesData = {{ us_states | safe }};
 var otherData = {{ other_data | safe }};
-console.log(otherData);
+console.log(otherData.adjusted_salesprice);
 
 // function to get choropleth colour from input
 function getColour(d) {
