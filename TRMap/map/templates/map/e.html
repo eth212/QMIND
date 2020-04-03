@@ -56,76 +56,26 @@
           '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(myMap);
 
-  //     var epoch ={
-  // "type": "FeatureCollection",
-  // "features": [
-  //   {
-  //     "type": "Feature",
-  //     "properties": {
-  //       "epoch": "1426952605000"
-  //     },
-  //     "geometry": {
-  //       "type": "Point",
-  //       "coordinates": [7.582512743, 51.933292258, 1]
-  //     }
-  //   },
-  //   {
-  //     "type": "Feature",
-  //     "properties": {
-  //       "epoch": "1426952605000"
-  //     },
-  //     "geometry": {
-  //       "type": "Point",
-  //       "coordinates": [-104.9653271, 39.7348381, 1]
-  //     }
-  //   },
-  //   {
-  //     "type": "Feature",
-  //     "properties": {
-  //       "epoch": "1426952609000"
-  //     },
-  //     "geometry": {
-  //       "type": "Point",
-  //       "coordinates": [-96.41359090000002, 42.4737805, 1]
-  //     }
-  //   },
-  //   {
-  //     "type": "Feature",
-  //     "properties": {
-  //       "epoch": "1426952608000"
-  //     },
-  //     "geometry": {
-  //       "type": "Point",
-  //       "coordinates": [-90.1845388, 35.1464797, 1]
-  //     }
-  //     }
-  //   ]
-  // };
-
-      //Fetch some data from a GeoJSON file
-      $.getJSON("{% static "epoch.json" %}", function(json) {
-        var testlayer =
-        L.geoJson(json),
-          sliderControl = L.control.sliderControl({
-            position: "topright",
-            layer: testlayer
-          });
-
-        //For a Range-Slider use the range property:
-        sliderControl = L.control.sliderControl({
-          position: "topright",
-          layer: testlayer,
-          timeAttribute: "epoch",
-          isEpoch: true,
-          range: true
-        });
-
-        //Make sure to add the slider to the map
-        myMap.addControl(sliderControl);
-        //And initialize the slider
-        sliderControl.startSlider();
+    var jsonData = {{ epoch_data | safe }};
+    console.log(jsonData);
+    var testlayer =
+    L.geoJson(jsonData),
+      sliderControl = L.control.sliderControl({
+        position: "topright",
+        layer: testlayer
+      });
+      sliderControl = L.control.sliderControl({
+        position: "topright",
+        layer: testlayer,
+        timeAttribute: "epoch",
+        isEpoch: true,
+        range: true
       });
 
+      //Make sure to add the slider to the map
+      myMap.addControl(sliderControl);
+      //And initialize the slider
+      sliderControl.startSlider();
 
     </script>
   </body>

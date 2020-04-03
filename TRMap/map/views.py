@@ -5,7 +5,7 @@ import json
 
 
 def map(request):
-    df = pd.read_excel("map/static/map/tractor_data.xlsx")
+    df = pd.read_excel("map/static/tractor_data.xlsx")
     noNaNs = df.fillna(0)
     # getting locations into np array with no NaN values
     locations = np.array(df['Location'].dropna().tolist())
@@ -31,7 +31,7 @@ def map(request):
                 countDict[locations[i][-2:]] = 1
 
     # loading geoJSON data of us states
-    with open("map/static/map/us-states.json") as geoJSON:
+    with open("map/static/us-states.json") as geoJSON:
         us_states = json.load(geoJSON)
     mapData = us_states['features']  # pointer to the features of each state
 
@@ -55,4 +55,6 @@ def e(request):
    # otherData['saledate'] = [str(i) for i in otherData['saledate']]     #turning datetimes into strs
 
     # context={'other_data': json.dumps(otherData)})
-    return render(request, 'map/e.html')
+    with open("map/static/epoch.json") as epochJSON:
+        epoch_data = json.load(epochJSON)
+    return render(request, 'map/e.html', context={'epoch_data': epoch_data})
