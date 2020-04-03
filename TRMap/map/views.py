@@ -40,3 +40,14 @@ def map(request):
             continue
 
     return render(request, 'map/index.html', context={'us_states' : json.dumps(us_states), 'other_data': json.dumps(otherData)})
+
+def e(request):
+    df = pd.read_excel("map/static/map/tractor_data.xlsx")
+    noNaNs = df.fillna(0)
+
+    otherData = {'make': noNaNs['Make'].tolist(), 'model': noNaNs['Model'].tolist(), 'location': noNaNs['Location'].tolist(),        #getting other data for maps
+                    'saledate': noNaNs['SaleDate'].tolist(), 'salesprice': noNaNs['Salesprice'].tolist(), 'adjusted_salesprice': noNaNs['Adjusted_Salesprice'].tolist()}
+
+    otherData['saledate'] = [str(i) for i in otherData['saledate']]     #turning datetimes into strs
+
+    return render(request, 'map/e.html', context={'other_data': json.dumps(otherData)})
