@@ -20,6 +20,8 @@
       href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"
       type="text/css"
     />
+
+  {% load static %}
   </head>
 
   <body>
@@ -34,7 +36,7 @@
     <!-- Include this library for mobile touch support  -->
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
 
-    <script src="SliderControl.js"></script>
+    <script src="{% static map/SliderControl.js %}"></script>
 
     <script>
       var sliderControl = null;
@@ -54,7 +56,7 @@
       }).addTo(myMap);
 
       //Fetch some data from a GeoJSON file
-      $.getJSON("epoch.json", function(json) {
+      $.getJSON("{% static map/epoch.json%}", function(json) {
         var testlayer = L.geoJson(json),
           sliderControl = L.control.sliderControl({
             position: "topright",
