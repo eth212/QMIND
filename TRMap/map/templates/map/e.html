@@ -41,7 +41,8 @@
     <script>
 
       var sliderControl = null;
-   //   var otherData = {{ other_data | safe }};
+      var otherData = {{ other_data | safe }};
+      console.log(otherData);
 
       // var southWest = L.latLng(24.7433195, -124.7844079),
       // northEast = L.latLng(49.3457868, -66.9513812),
@@ -57,7 +58,6 @@
       }).addTo(myMap);
 
     var jsonData = {{ epoch_data | safe }};
-    console.log(jsonData);
     var testlayer =
     L.geoJson(jsonData),
       sliderControl = L.control.sliderControl({

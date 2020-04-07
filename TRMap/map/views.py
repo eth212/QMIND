@@ -46,15 +46,15 @@ def map(request):
 
 
 def e(request):
-    #df = pd.read_excel("map/static/map/tractor_data.xlsx")
-  #  noNaNs = df.fillna(0)
+    df = pd.read_excel("map/static/tractor_data.xlsx")
+    noNaNs = df.fillna(0)
 
-  #  otherData = {'make': noNaNs['Make'].tolist(), 'model': noNaNs['Model'].tolist(), 'location': noNaNs['Location'].tolist(),        #getting other data for maps
-  #                  'saledate': noNaNs['SaleDate'].tolist(), 'salesprice': noNaNs['Salesprice'].tolist(), 'adjusted_salesprice': noNaNs['Adjusted_Salesprice'].tolist()}
+    otherData = {'make': noNaNs['Make'].tolist(), 'model': noNaNs['Model'].tolist(), 'location': noNaNs['Location'].tolist(),        #getting other data for maps
+                   'saledate': noNaNs['SaleDate'].tolist(), 'salesprice': noNaNs['Salesprice'].tolist(), 'adjusted_salesprice': noNaNs['Adjusted_Salesprice'].tolist()}
 
-   # otherData['saledate'] = [str(i) for i in otherData['saledate']]     #turning datetimes into strs
+    otherData['saledate'] = [str(i) for i in otherData['saledate']]     #turning datetimes into strs
 
-    # context={'other_data': json.dumps(otherData)})
+    # context={'other_data': json.dumps(otherData)}
     with open("map/static/epoch.json") as epochJSON:
         epoch_data = json.load(epochJSON)
-    return render(request, 'map/e.html', context={'epoch_data': epoch_data})
+    return render(request, 'map/e.html', context={'epoch_data': epoch_data, 'other_data': json.dumps(otherData)})
