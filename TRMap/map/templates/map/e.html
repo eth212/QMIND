@@ -43,6 +43,7 @@
     //   var sliderControl = null;
        var otherData = {{ other_data | safe }};
        var locationData = {{ location_data | safe }};
+       var statesData = {{ us_states | safe }};
 
     //   // var southWest = L.latLng(24.7433195, -124.7844079),
     //   // northEast = L.latLng(49.3457868, -66.9513812),
@@ -56,6 +57,40 @@
          attribution:
            '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
        }).addTo(myMap);
+
+      function style(feature) {
+           return {
+               weight: 2,
+               opacity: 0,
+               fillOpacity: 0
+           };
+       }
+
+    var geojson;
+
+     function highlightFeature(e) {
+        var layer = e.target;
+
+        layer.setStyle({
+            weight: 5,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.7
+        });
+    }
+
+    function resetHighlight(e) {
+      geojson.resetStyle(e.target);
+    }
+
+    function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+    });
+    }
+
+    geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
 
     // var jsonData = {{ epoch_data | safe }};
     // console.log(jsonData);
@@ -108,24 +143,10 @@
       }
       console.log(arrayMarkers);
 
-     // var marker1 = L.marker([29.7589382, -95.36769740000001], {time: "2013-01-22 08:42:26+01"});
-     // var marker2 = L.marker([51.6, -0.09], {time: "2013-01-22 10:00:26+01"});
-     // var marker3 = L.marker([51.7, -0.09], {time: "2013-01-22 10:03:29+01"});
-
-      // var arrayMarker2 = []
-      // arrayMarker2.push(marker1);
-      // arrayMarker2.push(marker2);
-      // arrayMarker2.push(marker3);
-
-      // console.log(arrayMarker2);
-
-
       layerGroup = L.layerGroup(arrayMarkers);
       var sliderControl = L.control.sliderControl({layer:layerGroup});
       myMap.addControl(sliderControl);
       sliderControl.startSlider();
-
-
 
     </script>
   </body>

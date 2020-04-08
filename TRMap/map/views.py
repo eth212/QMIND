@@ -51,7 +51,7 @@ def e(request):
     df = pd.read_excel("map/static/tractor_data.xlsx")
     noNaNs = df.dropna(subset=['SaleDate'])
     # noNaNs['SaleDate'] = pd.to_datetime(noNaNs['SaleDate'])
-    noNaNs['SaleDate'] = noNaNs['SaleDate'].apply(lambda x: x.replace(day=1))
+    noNaNs['SaleDate'] = noNaNs['SaleDate'].apply(lambda x: x.replace(day=1))   #changing all dates to the 1st of the month
 
     noNaNs['SaleDate'] = noNaNs['SaleDate'].astype(str)             #convert timestamps to string
     noNaNs.sort_values(by=['SaleDate'], inplace=True)               #sort columns by date
@@ -64,4 +64,7 @@ def e(request):
     locationData = {'location': df2['Location'].tolist(
     ), 'longitude': df2['Longitude'].tolist(), 'latitude': df2['Latitude'].tolist()}
 
-    return render(request, 'map/e.html', context={'other_data': json.dumps(otherData), 'location_data': json.dumps(locationData)})
+    with open("map/static/us-states.json") as geoJSON:
+        us_states = json.load(geoJSON)
+
+    return render(request, 'map/e.html', context={'other_data': json.dumps(otherData), 'location_data': json.dumps(locationData), 'us_states': us_states})

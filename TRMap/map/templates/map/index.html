@@ -40,12 +40,12 @@ function getColour(d) {
 // function that uses getColour to get choropleth colour for state saleCount
 function style(feature) {
     return {
-        fillColor: getColour(feature.properties.saleCount),
+        // fillColor: getColour(feature.properties.saleCount),
         weight: 2,
         opacity: 1,
         color: 'white',
-        dashArray: '3',
-        fillOpacity: 0.7
+        // dashArray: '3',
+        fillOpacity: 0.0
     };
 }
 
@@ -57,7 +57,6 @@ function style(feature) {
         ', Tiles courtesy of <a href="https://geo6.be/">GEO-6</a>',
     maxZoom: 18
 }).addTo(map);
-L.geoJson(statesData).addTo(map);
 L.geoJson(statesData, {style: style}).addTo(map);
 </script>
 </body>
