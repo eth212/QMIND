@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 import pandas as pd
 import numpy as np
 import json
+import datetime
 
 
 def map(request):
     df = pd.read_excel("map/static/tractor_data.xlsx")
     noNaNs = df.fillna(0)
+
     # getting locations into np array with no NaN values
     locations = np.array(df['Location'].dropna().tolist())
 
@@ -47,19 +49,19 @@ def map(request):
 
 def e(request):
     df = pd.read_excel("map/static/tractor_data.xlsx")
-    noNaNs = df.fillna(0)
+    noNaNs = df.dropna(subset=['SaleDate'])
+    # noNaNs['SaleDate'] = pd.to_datetime(noNaNs['SaleDate'])
+    noNaNs['SaleDate'] = noNaNs['SaleDate'].apply(lambda x: x.replace(day=1))
+
+    noNaNs['SaleDate'] = noNaNs['SaleDate'].astype(str)             #convert timestamps to string
+    noNaNs.sort_values(by=['SaleDate'], inplace=True)               #sort columns by date
 
     otherData = {'make': noNaNs['Make'].tolist(), 'model': noNaNs['Model'].tolist(), 'location': noNaNs['Location'].tolist(),  # getting other data for maps
                  'saledate': noNaNs['SaleDate'].tolist(), 'salesprice': noNaNs['Salesprice'].tolist(), 'adjusted_salesprice': noNaNs['Adjusted_Salesprice'].tolist()}
-
-    # turning datetimes into strs
-    otherData['saledate'] = [str(i) for i in otherData['saledate']]
+    print(otherData['saledate'][:10000])
 
     df2 = pd.read_csv("map/static/All_Locations_LongLat.csv")
     locationData = {'location': df2['Location'].tolist(
     ), 'longitude': df2['Longitude'].tolist(), 'latitude': df2['Latitude'].tolist()}
 
-    # context={'other_data': json.dumps(otherData)}
-    with open("map/static/epoch.json") as epochJSON:
-        epoch_data = json.load(epochJSON)
-    return render(request, 'map/e.html', context={'epoch_data': epoch_data, 'other_data': json.dumps(otherData), 'location_data': json.dumps(locationData)})
+    return render(request, 'map/e.html', context={'other_data': json.dumps(otherData), 'location_data': json.dumps(locationData)})

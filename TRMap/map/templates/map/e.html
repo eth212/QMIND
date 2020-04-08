@@ -102,7 +102,7 @@
        // console.log(otherData['location'][i].toString());
       //  console.log(retrivecoordinates(otherData['location'][i].toString()))
       //  console.log("Location: " + retrivecoordinates[otherData['location'][i].toString()]);
-        var marker = L.marker(  retrivecoordinates(otherData['location'][i].toString()),
+        var marker = L.marker(retrivecoordinates(otherData['location'][i].toString()),
          {time: otherData["saledate"][i]});
         arrayMarkers.push(marker);
       }
@@ -124,7 +124,7 @@
       var sliderControl = L.control.sliderControl({layer:layerGroup});
       myMap.addControl(sliderControl);
       sliderControl.startSlider();
-      
+
 
 
     </script>
