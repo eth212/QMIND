@@ -49,12 +49,17 @@ def e(request):
     df = pd.read_excel("map/static/tractor_data.xlsx")
     noNaNs = df.fillna(0)
 
-    otherData = {'make': noNaNs['Make'].tolist(), 'model': noNaNs['Model'].tolist(), 'location': noNaNs['Location'].tolist(),        #getting other data for maps
-                   'saledate': noNaNs['SaleDate'].tolist(), 'salesprice': noNaNs['Salesprice'].tolist(), 'adjusted_salesprice': noNaNs['Adjusted_Salesprice'].tolist()}
+    otherData = {'make': noNaNs['Make'].tolist(), 'model': noNaNs['Model'].tolist(), 'location': noNaNs['Location'].tolist(),  # getting other data for maps
+                 'saledate': noNaNs['SaleDate'].tolist(), 'salesprice': noNaNs['Salesprice'].tolist(), 'adjusted_salesprice': noNaNs['Adjusted_Salesprice'].tolist()}
 
-    otherData['saledate'] = [str(i) for i in otherData['saledate']]     #turning datetimes into strs
+    # turning datetimes into strs
+    otherData['saledate'] = [str(i) for i in otherData['saledate']]
+
+    df2 = pd.read_csv("map/static/All_Locations_LongLat.csv")
+    locationData = {'location': df2['Location'].tolist(
+    ), 'longitude': df2['Longitude'].tolist(), 'latitude': df2['Latitude'].tolist()}
 
     # context={'other_data': json.dumps(otherData)}
     with open("map/static/epoch.json") as epochJSON:
         epoch_data = json.load(epochJSON)
-    return render(request, 'map/e.html', context={'epoch_data': epoch_data, 'other_data': json.dumps(otherData)})
+    return render(request, 'map/e.html', context={'epoch_data': epoch_data, 'other_data': json.dumps(otherData), 'location_data': json.dumps(locationData)})

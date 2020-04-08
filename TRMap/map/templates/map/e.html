@@ -40,42 +40,92 @@
 
     <script>
 
-      var sliderControl = null;
-      var otherData = {{ other_data | safe }};
+    //   var sliderControl = null;
+       var otherData = {{ other_data | safe }};
+       var locationData = {{ location_data | safe }};
+
+    //   // var southWest = L.latLng(24.7433195, -124.7844079),
+    //   // northEast = L.latLng(49.3457868, -66.9513812),
+    //   // bounds = L.latLngBounds(southWest, northEast);
+
+       var myMap = L.map("map", {
+    //     // maxBounds: bounds
+       }).setView([48, -102], 4);
+
+       L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+         attribution:
+           '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+       }).addTo(myMap);
+
+    // var jsonData = {{ epoch_data | safe }};
+    // console.log(jsonData);
+    // console.log(otherData);
+    // console.log(otherData[0][0]);
+    // var testlayer =
+    // L.geoJson(jsonData),
+    //   sliderControl = L.control.sliderControl({
+    //     position: "topright",
+    //     layer: testlayer
+    //   });
+    //   sliderControl = L.control.sliderControl({
+    //     position: "topright",
+    //     layer: testlayer,
+    //     timeAttribute: "epoch",
+    //     isEpoch: true,
+    //     range: true
+    //   });
+
+    //   //Make sure to add the slider to the map
+    //   myMap.addControl(sliderControl);
+    //   //And initialize the slider
+    //   sliderControl.startSlider();
+
+      // Creating a new array of coordinates
+      function retrivecoordinates(location){
+        for(x =0;x<=661;x++){
+          if (locationData['location'][x] == location ){
+            return [locationData['latitude'][x],locationData['longitude'][x]];
+          }
+        }
+        return [0,0];
+      }
+
       console.log(otherData);
+      console.log(locationData);
 
-      // var southWest = L.latLng(24.7433195, -124.7844079),
-      // northEast = L.latLng(49.3457868, -66.9513812),
-      // bounds = L.latLngBounds(southWest, northEast);
+      console.log(otherData["saledate"][4]);
+      console.log(retrivecoordinates("HOUSTON, TX"));
 
-      var myMap = L.map("map", {
-        // maxBounds: bounds
-      }).setView([48, -102], 4);
+      var arrayMarkers = [];
 
-      L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(myMap);
+      for(i = 0;i<1000;i++){
+       // console.log(otherData['location'][i].toString());
+      //  console.log(retrivecoordinates(otherData['location'][i].toString()))
+      //  console.log("Location: " + retrivecoordinates[otherData['location'][i].toString()]);
+        var marker = L.marker(  retrivecoordinates(otherData['location'][i].toString()),
+         {time: otherData["saledate"][i]});
+        arrayMarkers.push(marker);
+      }
+      console.log(arrayMarkers);
 
-    var jsonData = {{ epoch_data | safe }};
-    var testlayer =
-    L.geoJson(jsonData),
-      sliderControl = L.control.sliderControl({
-        position: "topright",
-        layer: testlayer
-      });
-      sliderControl = L.control.sliderControl({
-        position: "topright",
-        layer: testlayer,
-        timeAttribute: "epoch",
-        isEpoch: true,
-        range: true
-      });
+     // var marker1 = L.marker([29.7589382, -95.36769740000001], {time: "2013-01-22 08:42:26+01"});
+     // var marker2 = L.marker([51.6, -0.09], {time: "2013-01-22 10:00:26+01"});
+     // var marker3 = L.marker([51.7, -0.09], {time: "2013-01-22 10:03:29+01"});
 
-      //Make sure to add the slider to the map
+      // var arrayMarker2 = []
+      // arrayMarker2.push(marker1);
+      // arrayMarker2.push(marker2);
+      // arrayMarker2.push(marker3);
+
+      // console.log(arrayMarker2);
+
+
+      layerGroup = L.layerGroup(arrayMarkers);
+      var sliderControl = L.control.sliderControl({layer:layerGroup});
       myMap.addControl(sliderControl);
-      //And initialize the slider
       sliderControl.startSlider();
+      
+
 
     </script>
   </body>
