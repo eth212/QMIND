@@ -218,7 +218,7 @@ SD = None #range(2014,2017) #[2017] #None #[2011]
 L = None #["ORLANDO, FL"]
 SN = None
 Y = None
-MA = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MA = ["FREIGHTLINER"] #None #["FREIGHTLINER"]
 MO = None #None #["COLUMBIA CL120"]
 
 for i in range(1996, 2021):

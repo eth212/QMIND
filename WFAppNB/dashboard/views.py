@@ -573,9 +573,21 @@ def getData(request):
 		# Added by Kyle
 		#print(sql)
 		Data = pd.read_sql(sql,cnxn)
+		Data.to_csv("dashboard/static/dashboard/csv/AllData.csv", columns=["SalesPrice", "SaleDate", "Location"])
 		#print(Data.head())
 		#print(Data.columns)
-		Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice"])
+		
+		def write_hist_data(Data, highlight_year=None):
+			Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice"])
+			# Make a second csv with just a single years worth of data, to turn a different colour upon a change in the map slider
+			if(type(highlight_year) != type(None)):
+				single_year = Data[Data['SaleDate'].dt.year==highlight_year]
+				single_year.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice"])
+			else: # If no year is supplied highlight all the data
+				Data.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice"])
+
+		# write_hist_data(Data, 2012)
+		write_hist_data(Data)
 
 
 		# Generate an HTML string that says how many assets are included and filtered out
@@ -592,6 +604,75 @@ def getData(request):
 		return JsonResponse(data_details)
 
 	return render(request)
+
+
+# Update the histogram and highlight the specified year 
+def update_hist_data(request):
+
+	# Move this function outside to be used here and in get_results
+	def write_hist_data(Data, highlight_year=None, HistDataLocations=None):
+
+		if(type(HistDataLocations) != type(None)):
+			Data = Data[Data["Location"] == HistDataLocations]
+		Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice"])
+		# Make a second csv with just a single years worth of data, to turn a different colour upon a change in the map slider
+		if(type(highlight_year) != type(None)):
+			single_year = Data[Data['SaleDate'].dt.year==highlight_year]
+			single_year.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice"])
+		else: # If no year is supplied highlight all the data
+			Data.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice"])
+
+	if request.method == "GET":
+		highlight_year = request.GET['highlight_year']
+		HistDataLocations = request.GET['HistDataLocations']
+		data = pd.read_csv("dashboard/static/dashboard/csv/AllData.csv", parse_dates=["SaleDate"])
+		print(highlight_year)
+		if(highlight_year == "None"):
+			highlight_year = None
+		else:
+			highlight_year = int(highlight_year)
+		if(HistDataLocations == "None"):
+			HistDataLocations = None
+
+		write_hist_data(data, highlight_year, HistDataLocations)
+
+		# Delay to allow the csv to load
+		# import time
+		# time.sleep(5)
+		# JSON Data dump
+		data_details = {'0':0} #???
+		return JsonResponse(data_details)
+	return render(request)
+
+# def update_hist_location_data(request):
+
+# 	def write_hist_location_data(Data, HistDataLocations=None):
+
+# 		Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice"])
+# 		# Make a second csv with just a single years worth of data, to turn a different colour upon a change in the map slider
+# 		if(type(highlight_year) != type(None)):
+# 			single_year = Data[Data['SaleDate'].dt.year==highlight_year]
+# 			single_year.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice"])
+# 		else: # If no year is supplied highlight all the data
+# 			Data.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice"])
+
+# 	if request.method == "GET":
+# 		HistDataLocations = request.GET['HistDataLocations']
+# 		data = pd.read_csv("dashboard/static/dashboard/csv/AllData.csv", parse_dates=["SaleDate"])
+# 		# print(highlight_year)
+# 		if(HistDataLocations == "None"):
+# 			HistDataLocations = None
+
+# 		write_hist_location_data(data, HistDataLocations)
+
+# 		# Delay to allow the csv to load
+# 		# import time
+# 		# time.sleep(5)
+# 		# JSON Data dump
+# 		data_details = {'0':0} #???
+# 		return JsonResponse(data_details)
+# 	return render(request)
+
 
 # Update table data upon changing the sorting method in the dropdown menu list in the table data panel
 def updatetabledata(request):
@@ -973,3 +1054,56 @@ def populatedropdownsModel(request):
 
 		return JsonResponse(data_details)
 	return render(request)
+
+
+# Load dropdown list of all locations for use in the histogram
+def populate_dropdowns_location(request):
+	if request.method == 'GET':
+
+		# Get selected category, dutytype, make, and year
+		Dutytype = request.GET['Dutytype']
+		Category = request.GET['Category']
+		Make = request.GET['Make']
+		Model = request.GET['Model']
+
+		"""
+		# Using category display name, get categories ID name to access database
+		#cnxn = pyodbc.connect('DSN=MYMSSQL;UID=sa;PWD=britelite')
+		sql1 = "SELECT * FROM QMIND.dbo.DBDutyType where ParentDutyTypeID is null"
+		Data1 = pd.read_sql(sql1,cnxn)
+		print(Data1)
+		df = Data1.loc[Data1['DisplayName'] == Category]
+		Category = df['DutyTypeDesc'].iloc[0]
+		"""
+
+		# Handle user selection possibilities to create the proper SQL query
+		if Make == '' and Dutytype == '':
+			sql = "SELECT * FROM QMIND.dbo.%s where MODEL = '%s'" %(Category, Model)
+		if Make == '' and Dutytype != '':
+			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s'" %(Category, Dutytype, Model)
+		if Make != '' and Dutytype == '':
+			sql = "SELECT * FROM QMIND.dbo.%s where MAKE = '%s' and MODEL = '%s'" %(Category, Make, Model)
+		if Make != '' and Dutytype != '':
+			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s' and MAKE = '%s'" %(Category, Dutytype, Model, Make)
+		print(sql)
+		Data = pd.read_sql(sql,cnxn)
+
+		# Count total number of each unique Year that appear in the data
+		dfYearcount = Data.groupby('Year').count()['DutyType']
+
+		# Get sorted lists of unique models, and years, respectively.
+		dfYear = Data[['Year']].drop_duplicates('Year').sort_values('Year')['Year']
+
+        # Populate Year HTML dropdown string
+		DropDownListYear = "<option value="">Select Year</option>"
+		for item in dfYear:
+			if item is None:
+				continue
+			DropDownItem = '<option value="%s">%s (%s)</option>' % (item, item, dfYearcount[item])
+			DropDownListYear = DropDownListYear + DropDownItem
+
+		data_details = {'0': DropDownListYear}
+
+		return JsonResponse(data_details)
+	return render(request)
+

@@ -31,4 +31,7 @@ urlpatterns = [
 	url('populatedropdownsModel', views.populatedropdownsModel, name='populatedropdownsModel'),
 	url('populatedropdowns', views.populatedropdowns, name='populatedropdowns'),
 	url('updateSearchTerm1', views.updateSearchTerm1, name='updateSearchTerm1'),
+	url('update_hist_data', views.update_hist_data, name='update_hist_data'),
+	url('populate_dropdowns_location', views.populate_dropdowns_location, name='populate_dropdowns_location'),
+	# url('update_hist_location_data', views.update_hist_location_data, name='update_hist_location_data'),
 	]
