@@ -575,6 +575,75 @@ $("#MapDataRankBy").change(function () {
 // Function that defines the histogram view. Called in get_results() and HistDataRankBy.change()
 // Next up: call this function with a slider paramater binSize and a list of locations locList
 function makeHist(HistDataRankBy, HistDataBinSize){
+  if(HistDataRankBy == "box"){
+      function linspace(a,b,n) {
+        return Plotly.d3.range(n).map(function(i){return a+i*(b-a)/(n-1);});
+      }
+      var boxNumber = 30;
+      var boxColor = [];
+      var allColors = linspace(0, 360, boxNumber);
+      var data = [];
+      var yValues = [];
+
+      //Colors
+
+      for( var i = 0; i < boxNumber;  i++ ){
+        var result = 'hsl('+ allColors[i] +',50%'+',50%)';
+        boxColor.push(result);
+      }
+
+      function getRandomArbitrary(min, max) {
+        return Math.random() * (max - min) + min;
+      };
+
+      //Create Y Values
+
+      for( var i = 0; i < boxNumber;  i++ ){
+        var ySingleArray = [];
+          for( var j = 0; j < 10;  j++ ){
+            var randomNum = getRandomArbitrary(0, 1);
+            var yIndValue = 3.5*Math.sin(Math.PI * i/boxNumber) + i/boxNumber+(1.5+0.5*Math.cos(Math.PI*i/boxNumber))*randomNum;
+            ySingleArray.push(yIndValue);
+          }
+        yValues.push(ySingleArray);
+      }
+
+      //Create Traces
+
+      for( var i = 0; i < boxNumber;  i++ ){
+        var result = {
+          y: yValues[i],
+          type:'box',
+          marker:{
+            color: boxColor[i]
+          }
+        };
+        data.push(result);
+      };
+
+      //Format the layout
+
+      var layout = {
+        xaxis: {
+          showgrid: false,
+          zeroline: false,
+          tickangle: 60,
+          showticklabels: false
+        },
+        yaxis: {
+          zeroline: false,
+          gridcolor: 'white'
+        },
+        paper_bgcolor: 'rgb(233,233,233)',
+        plot_bgcolor: 'rgb(233,233,233)',
+        showlegend:false
+      };
+
+      Plotly.purge(myDiv_hist);
+      Plotly.newPlot('myDiv_hist', data, layout);
+
+  } else {
+
 	Plotly.d3.csv("{% static 'dashboard/csv/HistData.csv' %}", function(err, rows){
     Plotly.d3.csv("{% static 'dashboard/csv/HistData_single_year.csv' %}", function(err, rows_single_year){
 
@@ -692,6 +761,7 @@ function makeHist(HistDataRankBy, HistDataBinSize){
 
 	});
   });
+};
 	return 0;
 }
 
@@ -1140,7 +1210,7 @@ thead {
 
 <!-- Histogram -->
 
-<h2 class="Blue" >Histogram <br><p class="CoolGrayDark" style="font-size: 15px;"></p></h2>
+<h2 class="Blue" >Visualization of asset over time in locations selected by the map <br><p class="CoolGrayDark" style="font-size: 15px;"></p></h2>
 <div class="row">
 <div class="col-lg-12">
 <div style="border-color:#334CFF !important;color:black;" class="panel">
@@ -1172,6 +1242,7 @@ thead {
 <option value="count">Number of Sales</option>
 <option value="max">Max Value</option>
 <option value="min">Min Value</option>
+<option value="box">Box and Whisker</option>
 </select>
 </div>
 </div>
