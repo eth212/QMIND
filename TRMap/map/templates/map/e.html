@@ -6,15 +6,10 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link
-      rel="stylesheet"
-      href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css"
-    />
-    <!--[if lte IE 8
-      ]><link
-        rel="stylesheet"
-        href="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.ie.css"
-    /><![endif]-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+  integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+  crossorigin=""/>
+
     <link
       rel="stylesheet"
       href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"
@@ -29,7 +24,9 @@
 
     <div id="map" style="width: 100%; height: 600px"></div>
 
-    <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
+  integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+  crossorigin=""></script>
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
 
@@ -37,6 +34,7 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
 
     <script src="{% static "SliderControl.js" %}"></script>
+    <script src="{% static "PruneCluster.js" %}"></script>
 
     <script>
 
@@ -45,13 +43,9 @@
        var locationData = {{ location_data | safe }};
        var statesData = {{ us_states | safe }};
 
-    //   // var southWest = L.latLng(24.7433195, -124.7844079),
-    //   // northEast = L.latLng(49.3457868, -66.9513812),
-    //   // bounds = L.latLngBounds(southWest, northEast);
-
        var myMap = L.map("map", {
     //     // maxBounds: bounds
-       }).setView([48, -102], 4);
+  }).setView([37.8, -96], 4);
 
        L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
          attribution:
@@ -91,29 +85,6 @@
     }
 
     geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
-
-    // var jsonData = {{ epoch_data | safe }};
-    // console.log(jsonData);
-    // console.log(otherData);
-    // console.log(otherData[0][0]);
-    // var testlayer =
-    // L.geoJson(jsonData),
-    //   sliderControl = L.control.sliderControl({
-    //     position: "topright",
-    //     layer: testlayer
-    //   });
-    //   sliderControl = L.control.sliderControl({
-    //     position: "topright",
-    //     layer: testlayer,
-    //     timeAttribute: "epoch",
-    //     isEpoch: true,
-    //     range: true
-    //   });
-
-    //   //Make sure to add the slider to the map
-    //   myMap.addControl(sliderControl);
-    //   //And initialize the slider
-    //   sliderControl.startSlider();
 
       // Creating a new array of coordinates
       function retrivecoordinates(location){

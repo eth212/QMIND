@@ -53,7 +53,7 @@ def e(request):
     # noNaNs['SaleDate'] = pd.to_datetime(noNaNs['SaleDate'])
     noNaNs['SaleDate'] = noNaNs['SaleDate'].apply(lambda x: x.replace(day=1))   #changing all dates to the 1st of the month
 
-    noNaNs['SaleDate'] = noNaNs['SaleDate'].astype(str)             #convert timestamps to string
+    noNaNs['SaleDate'] = noNaNs['SaleDate'].astype(str) + " 00:00:00+01"             #convert timestamps to string, addsd time as suffix
     noNaNs.sort_values(by=['SaleDate'], inplace=True)               #sort columns by date
 
     otherData = {'make': noNaNs['Make'].tolist(), 'model': noNaNs['Model'].tolist(), 'location': noNaNs['Location'].tolist(),  # getting other data for maps
