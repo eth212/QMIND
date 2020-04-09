@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
+
+    
+
     <title>Leaflet Time Slider Example</title>
     <meta charset="utf-8" />
 
@@ -21,6 +24,17 @@
       type="text/css"
     />
 
+    <!-- PRUNE CLUSTER STUFFF 
+    
+    	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+  integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+  crossorigin=""/>
+
+	<script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
+  integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+  crossorigin=""></script>
+  <script src="PruneCluster/dist/PruneCluster.js"></script>
+-->
   {% load static %}
   </head>
 
@@ -33,22 +47,39 @@
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
 
+    <script src="PruneCluster/dist/PruneCluster.js"></script>
+
+
     <!-- Include this library for mobile touch support  -->
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
 
     <script src="{% static "SliderControl.js" %}"></script>
 
+
     <script>
 
-    //   var sliderControl = null;
+      // testing prune cluster 
+
+      // import { PruneCluster, PruneClusterForLeaflet } from 'exports-loader?PruneCluster,PruneClusterForLeaflet!prunecluster/dist/PruneCluster.js'
+
+      // var pruneCluster = new PruneClusterForLeaflet();
+
+      // var marker = new PruneCluster.Marker(59.8717, 11.1909);
+      // var marker1 = new PruneCluster.Marker(59.8717, 11.1909);
+      // var marker2 = new PruneCluster.Marker(59.8717, 11.1909);
+      // pruneCluster.RegisterMarker([marker,marker1,marker2]);
+      // leafletMap.addLayer(pruneCluster);
+
+      // OtherData and Location data are the xlsx and csv files 
        var otherData = {{ other_data | safe }};
        var locationData = {{ location_data | safe }};
-       var statesData = {{ us_states | safe }};
 
-    //   // var southWest = L.latLng(24.7433195, -124.7844079),
-    //   // northEast = L.latLng(49.3457868, -66.9513812),
-    //   // bounds = L.latLngBounds(southWest, northEast);
+          // Map with US Boundaries 
+       // var southWest = L.latLng(24.7433195, -124.7844079),
+       // northEast = L.latLng(49.3457868, -66.9513812),
+       // bounds = L.latLngBounds(southWest, northEast);
 
+      // Creating map with openstreet map attribute  
        var myMap = L.map("map", {
     //     // maxBounds: bounds
        }).setView([48, -102], 4);
@@ -58,64 +89,7 @@
            '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
        }).addTo(myMap);
 
-      function style(feature) {
-           return {
-               weight: 2,
-               opacity: 0,
-               fillOpacity: 0
-           };
-       }
-
-    var geojson;
-
-     function highlightFeature(e) {
-        var layer = e.target;
-
-        layer.setStyle({
-            weight: 5,
-            color: '#666',
-            dashArray: '',
-            fillOpacity: 0.7
-        });
-    }
-
-    function resetHighlight(e) {
-      geojson.resetStyle(e.target);
-    }
-
-    function onEachFeature(feature, layer) {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-    });
-    }
-
-    geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
-
-    // var jsonData = {{ epoch_data | safe }};
-    // console.log(jsonData);
-    // console.log(otherData);
-    // console.log(otherData[0][0]);
-    // var testlayer =
-    // L.geoJson(jsonData),
-    //   sliderControl = L.control.sliderControl({
-    //     position: "topright",
-    //     layer: testlayer
-    //   });
-    //   sliderControl = L.control.sliderControl({
-    //     position: "topright",
-    //     layer: testlayer,
-    //     timeAttribute: "epoch",
-    //     isEpoch: true,
-    //     range: true
-    //   });
-
-    //   //Make sure to add the slider to the map
-    //   myMap.addControl(sliderControl);
-    //   //And initialize the slider
-    //   sliderControl.startSlider();
-
-      // Creating a new array of coordinates
+      //An Array to retrive coordinates - long lat given a location
       function retrivecoordinates(location){
         for(x =0;x<=661;x++){
           if (locationData['location'][x] == location ){
@@ -125,24 +99,17 @@
         return [0,0];
       }
 
-      console.log(otherData);
-      console.log(locationData);
-
-      console.log(otherData["saledate"][4]);
-      console.log(retrivecoordinates("HOUSTON, TX"));
-
+      // creating an array of markers 
       var arrayMarkers = [];
 
+      // Plotting the last 1000 units in a time series sldier 
       for(i = 0;i<1000;i++){
-       // console.log(otherData['location'][i].toString());
-      //  console.log(retrivecoordinates(otherData['location'][i].toString()))
-      //  console.log("Location: " + retrivecoordinates[otherData['location'][i].toString()]);
         var marker = L.marker(retrivecoordinates(otherData['location'][i].toString()),
          {time: otherData["saledate"][i]});
         arrayMarkers.push(marker);
       }
-      console.log(arrayMarkers);
 
+      // adding sliders to map
       layerGroup = L.layerGroup(arrayMarkers);
       var sliderControl = L.control.sliderControl({layer:layerGroup});
       myMap.addControl(sliderControl);
