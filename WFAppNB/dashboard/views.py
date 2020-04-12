@@ -17,7 +17,7 @@ gn = geocoders.GeoNames(username='13jjrk')
 # Dict of months
 MList = {1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'}
 
-cnxn = pyodbc.connect('DRIVER=FreeTDS;SERVER=localhost;PORT=1433;DATABASE=QMIND;UID=sa;PWD=reallyStrongPwd123;TDS_Version=8.0;')
+cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER=192.168.99.100;PORT=1433;UID=sa;PWD=Qmind2020!;TDS_Version=8.0;')
 
 # Load index.html on searching servername +'/dashboard/'
 def index(request):
@@ -576,7 +576,7 @@ def getData(request):
 		Data.to_csv("dashboard/static/dashboard/csv/AllData.csv", columns=["SalesPrice", "SaleDate", "Location"])
 		#print(Data.head())
 		#print(Data.columns)
-		
+
 		def write_hist_data(Data, highlight_year=None):
 			Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice"])
 			# Make a second csv with just a single years worth of data, to turn a different colour upon a change in the map slider
@@ -606,7 +606,7 @@ def getData(request):
 	return render(request)
 
 
-# Update the histogram and highlight the specified year 
+# Update the histogram and highlight the specified year
 def update_hist_data(request):
 
 	# Move this function outside to be used here and in get_results
@@ -1106,4 +1106,3 @@ def populate_dropdowns_location(request):
 
 		return JsonResponse(data_details)
 	return render(request)
-
