@@ -21,7 +21,9 @@ cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER=192.168.99.100;PORT=1433;UID=s
 
 # Load index.html on searching servername +'/dashboard/'
 def index(request):
-    return render(request, 'dashboard/index.html')
+    with open("dashboard/static/dashboard/us-states.json") as geoJSON:
+        us_states = json.load(geoJSON)
+    return render(request, 'dashboard/index.html', context={'us_states': us_states})
 
 # Update the Google Search trend data when the user clicks a related search term or custom searches their own
 def updateSearchTerm1(request):

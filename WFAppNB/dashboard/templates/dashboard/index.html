@@ -21,6 +21,16 @@
 <script src="https://cdn.rawgit.com/Gmousse/dataframe-js/master/dist/dataframe-min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 
+<!-- leaflet map imports -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
+integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+crossorigin=""></script>
+<script src="{% static "dashboard/SliderControl.js" %}"></script>
+<script src="{% static "dashboard/PruneCluster.js" %}"></script>
+
 <!-- Main JS that handles user interaction and sending/receiving data from views.py and csv files -->
 <script type="text/javascript">
 $(document).ready(function() {
@@ -794,7 +804,7 @@ function makeHist(HistDataRankBy, HistDataBinSize){
 
 // });
 
-// Update hist data to highlight a specific year and filter by location by changing the csv file 
+// Update hist data to highlight a specific year and filter by location by changing the csv file
 $("#HistDataHighlightYear").change(function () {
     // var HistDataBinSize = $('#HistDataBinSize').val();
     // var HistDataRankBy = $('#HistDataRankBy').val();
@@ -842,7 +852,7 @@ $("#HistDataLocations").change(function () {
   });
 
 
-// Update hist data to highlight a specific year by changing the csv file 
+// Update hist data to highlight a specific year by changing the csv file
 // Don't have to update the highlight year if its not used
 $("#hist_go").click(function () {
     var HistDataBinSize = $('#HistDataBinSize').val();
@@ -957,6 +967,50 @@ $("#Model").change(function () {
     	};
     });
 });
+
+// plonking Ben's map stuff here
+var statesData = {{ us_states | safe }};
+var myMap = L.map("map", {
+}).setView([37.8, -96], 4);
+
+L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+	attribution:
+		'&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(myMap);
+
+function style(feature) {
+		return {
+				weight: 2,
+				opacity: 0,
+				fillOpacity: 0
+		};
+}
+
+var geojson;
+
+function highlightFeature(e) {
+ var layer = e.target;
+
+ layer.setStyle({
+		 weight: 5,
+		 color: '#666',
+		 dashArray: '',
+		 fillOpacity: 0.7
+ });
+}
+
+function resetHighlight(e) {
+geojson.resetStyle(e.target);
+}
+
+function onEachFeature(feature, layer) {
+layer.on({
+ mouseover: highlightFeature,
+ mouseout: resetHighlight,
+});
+}
+
+geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
 </script>
 
 <style>
@@ -1203,6 +1257,7 @@ thead {
         	</div>
         <div class="panel-body">
         <div id="myDiv"></div>
+				<!-- <div id="map" style="width: 700px; height: 500px"></div> -->
 		</div>
     </div>
 </div>
@@ -1219,7 +1274,7 @@ thead {
 <div class="pull-right">
 <style>
 .button {
-  background-color: #e7e7e7; 
+  background-color: #e7e7e7;
   border: none;
   color: #334CFF;
   padding: 2px 15px;
