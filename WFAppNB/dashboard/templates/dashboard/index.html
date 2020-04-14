@@ -251,7 +251,7 @@ $('#get_results').click(function() {
 		// Clear current plots
 		Plotly.purge(myDiv11);
 		Plotly.purge(myDiv12);
-		Plotly.purge(myDiv);
+		// Plotly.purge(myDiv);
     Plotly.purge(myDiv_hist);
 
 		// Get data from user selection
@@ -383,7 +383,7 @@ $('#get_results').click(function() {
         }
     };
 
-    Plotly.plot(myDiv, data2, layout, {showLink: false});
+    // Plotly.plot(myDiv, data2, layout, {showLink: false});
 
 });
 
@@ -575,8 +575,8 @@ $("#MapDataRankBy").change(function () {
         }
     };
 
-	Plotly.purge(myDiv);
-  Plotly.plot(myDiv, data2, layout, {showLink: false});
+	// Plotly.purge(myDiv);
+  // Plotly.plot(myDiv, data2, layout, {showLink: false});
 
 });
 
@@ -967,50 +967,6 @@ $("#Model").change(function () {
     	};
     });
 });
-
-// plonking Ben's map stuff here
-var statesData = {{ us_states | safe }};
-var myMap = L.map("map", {
-}).setView([37.8, -96], 4);
-
-L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
-	attribution:
-		'&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(myMap);
-
-function style(feature) {
-		return {
-				weight: 2,
-				opacity: 0,
-				fillOpacity: 0
-		};
-}
-
-var geojson;
-
-function highlightFeature(e) {
- var layer = e.target;
-
- layer.setStyle({
-		 weight: 5,
-		 color: '#666',
-		 dashArray: '',
-		 fillOpacity: 0.7
- });
-}
-
-function resetHighlight(e) {
-geojson.resetStyle(e.target);
-}
-
-function onEachFeature(feature, layer) {
-layer.on({
- mouseover: highlightFeature,
- mouseout: resetHighlight,
-});
-}
-
-geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
 </script>
 
 <style>
@@ -1256,8 +1212,8 @@ thead {
           </div>
         	</div>
         <div class="panel-body">
-        <div id="myDiv"></div>
-				<!-- <div id="map" style="width: 700px; height: 500px"></div> -->
+        <!-- <div id="myDiv"></div> -->
+				<div id="LMap" style="width: 700px; height: 400px"></div>
 		</div>
     </div>
 </div>
@@ -1353,7 +1309,7 @@ thead {
 
 </div>
 <div class="panel-body">
-<div id="myDiv_hist"></div>
+	<div id="myDiv_hist"></div>
 </div>
 </div>
 </div>
@@ -1398,7 +1354,51 @@ thead {
 <script src='http://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js'></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
+<!-- plonking Ben's map stuff here -->
+<script type="text/javascript">
+var statesData = {{ us_states | safe }};
+var myMap = L.map("LMap").setView([37.8, -96], 4);
 
+L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+	attribution:
+		'&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(myMap);
+
+function style(feature) {
+		return {
+				weight: 2,
+				opacity: 0,
+				fillOpacity: 0
+		};
+}
+
+var geojson;
+
+function highlightFeature(e) {
+ var layer = e.target;
+
+ layer.setStyle({
+		 weight: 5,
+		 color: '#666',
+		 dashArray: '',
+		 fillOpacity: 0.7
+ });
+}
+
+function resetHighlight(e) {
+geojson.resetStyle(e.target);
+}
+
+function onEachFeature(feature, layer) {
+layer.on({
+ mouseover: highlightFeature,
+ mouseout: resetHighlight,
+});
+}
+
+geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
+
+</script>
 
 </body>
 
