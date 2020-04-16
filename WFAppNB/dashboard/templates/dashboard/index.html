@@ -24,15 +24,41 @@
 <!-- leaflet map imports -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
-integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
-crossorigin=""/> -->
-<!-- <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
-integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
-crossorigin=""></script> -->
-<!-- <script src="{% static "dashboard/SliderControl.js" %}"></script> -->
 <script src="{% static "dashboard/leaflet-timeline-slider.js" %}"></script>
 <script src="{% static "dashboard/PruneCluster.js" %}"></script>
+
+<!-- leaflet map functions, actual map/function use is at bottom of file -->
+<script type="text/javascript">
+function style(feature) {
+		return {
+				weight: 2,
+				opacity: 0,
+				fillOpacity: 0
+		};
+}
+
+function highlightFeature(e) {
+ var layer = e.target;
+
+ layer.setStyle({
+		 weight: 5,
+		 color: '#666',
+		 dashArray: '',
+		 fillOpacity: 0.7
+ });
+}
+
+function resetHighlight(e) {
+	geojson.resetStyle(e.target);
+}
+
+function onEachFeature(feature, layer) {
+	layer.on({
+	 mouseover: highlightFeature,
+	 mouseout: resetHighlight,
+	});
+}
+</script>
 
 <!-- Main JS that handles user interaction and sending/receiving data from views.py and csv files -->
 <script type="text/javascript">
@@ -250,6 +276,8 @@ $.get('/dashboard/populatedropdowns', {}, function(data) {
 
 // Get data upon selecting data and clicking get results
 $('#get_results').click(function() {
+
+
 
 		// Clear current plots
 		Plotly.purge(myDiv11);
@@ -1360,7 +1388,6 @@ thead {
 
 <!-- plonking Ben's map stuff here -->
 <script type="text/javascript">
-var statesData = {{ us_states | safe }};
 var myMap = L.map("LMap").setView([37.8, -96], 4);
 
 L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
@@ -1368,38 +1395,8 @@ L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
 		'&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(myMap);
 
-function style(feature) {
-		return {
-				weight: 2,
-				opacity: 0,
-				fillOpacity: 0
-		};
-}
-
+var statesData = {{ us_states | safe }};
 var geojson;
-
-function highlightFeature(e) {
- var layer = e.target;
-
- layer.setStyle({
-		 weight: 5,
-		 color: '#666',
-		 dashArray: '',
-		 fillOpacity: 0.7
- });
-}
-
-function resetHighlight(e) {
-geojson.resetStyle(e.target);
-}
-
-function onEachFeature(feature, layer) {
-layer.on({
- mouseover: highlightFeature,
- mouseout: resetHighlight,
-});
-}
-
 geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
 
 // SKELETON FUNCTION UPDATE WHEN WORKING

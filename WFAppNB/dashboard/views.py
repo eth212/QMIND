@@ -816,7 +816,7 @@ def populatedropdowns(request):
 		DropDownListCat = "<option value="">Select Category</option>"
 		DropDownItem = '<option value="Tractors">Tractors</option>'
 		DropDownListCat = DropDownListCat + DropDownItem
-		# ADDED FOR QMNID TEAM
+		# ADDED FOR QMIND TEAM
 
 		data_details = {'0':DropDownListCat}
 
@@ -1108,3 +1108,10 @@ def populate_dropdowns_location(request):
 
 		return JsonResponse(data_details)
 	return render(request)
+
+def getSliderData(request):
+    if request.method == 'GET':
+        df = pd.read_csv('static/dashboard/AllData.csv')
+        json = {'location': df['Location'], 'saledate': df['SaleDate']}
+        return JsonResponse(json)
+    return rener(request)
