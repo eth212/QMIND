@@ -1399,70 +1399,70 @@ var statesData = {{ us_states | safe }};
 var geojson;
 geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
 
-// SKELETON FUNCTION UPDATE WHEN WORKING
-function mapLocationsToCoords(csv) {
-	locations = [];
-	for (var i=0; i<csv.length; i++;) {
-		if (!locations.includes(csv[i].location)) {
-			locations.push(csv[i].location);
-		}
-	}
-
-	json = {};
-	for (var i=0; i<locations.length; i++;) {
-		if (!json.hasOwnProperty(locations[i])) {
-			// json.locations[i] =  fill this in later
-		}
-	}
-	return json;
-}
-
-locToCoord = mapLocationsToCoords(csv);
-
-// SKELETON FUNCTION UPDATE WHEN WORKING
-function mapDatesToObjects(csv) {
-	json = {};
-	for(var i=0; i<csv.length; i++;) {
-			if (Array.isArray(jsonTrash[csv[i].date])) {
-				json[csv[i].date].push(csv[i].tractor);
-			}
-			else {
-				json[csv[i].date] = [csv[i].tractor];
-			}
-	}
-	return json;
-}
-
-timelineJSON = mapDatesToObjects(csv);
-
-// SKELETON FUNCTION UPDATE WHEN WORKING
-function getDateList(csv) {
-	dateList = [];
-	for(var i=0; i<csv.length; i++;) {
-		if (!dateList.includes(csv[i].date)) {
-			dateList.push(csv[i].date);
-		}
-	}
-	return dateList.sort();
-}
-
-function refreshData({label, value, map}) {
-	map.eachLayer(function (layer) {
-		if (layer instanceof L.Marker) {
-			map.removeLayer(layer);
-		}
-	});
-	var markers = [];
-	for (var i=0; i<timelineJSON.label.length; i++;) {
-		markers.push(L.Marker(locToCoord[timelineJSON.label[i]]));
-	}
-	L.featureGroup(markers).addTo(map);
-}
-
-L.control.timelineSlider({
-                timelineItems: getDateList(csv),
-                changeMap: refreshData})
-            .addTo(myMap);
+// // SKELETON FUNCTION UPDATE WHEN WORKING
+// function mapLocationsToCoords(csv) {
+// 	locations = [];
+// 	for (var i=0; i<csv.length; i++;) {
+// 		if (!locations.includes(csv[i].location)) {
+// 			locations.push(csv[i].location);
+// 		}
+// 	}
+//
+// 	json = {};
+// 	for (var i=0; i<locations.length; i++;) {
+// 		if (!json.hasOwnProperty(locations[i])) {
+// 			// json.locations[i] =  fill this in later
+// 		}
+// 	}
+// 	return json;
+// }
+//
+// locToCoord = mapLocationsToCoords(csv);
+//
+// // SKELETON FUNCTION UPDATE WHEN WORKING
+// function mapDatesToObjects(csv) {
+// 	json = {};
+// 	for(var i=0; i<csv.length; i++;) {
+// 			if (Array.isArray(jsonTrash[csv[i].date])) {
+// 				json[csv[i].date].push(csv[i].tractor);
+// 			}
+// 			else {
+// 				json[csv[i].date] = [csv[i].tractor];
+// 			}
+// 	}
+// 	return json;
+// }
+//
+// timelineJSON = mapDatesToObjects(csv);
+//
+// // SKELETON FUNCTION UPDATE WHEN WORKING
+// function getDateList(csv) {
+// 	dateList = [];
+// 	for(var i=0; i<csv.length; i++;) {
+// 		if (!dateList.includes(csv[i].date)) {
+// 			dateList.push(csv[i].date);
+// 		}
+// 	}
+// 	return dateList.sort();
+// }
+//
+// function refreshData({label, value, map}) {
+// 	map.eachLayer(function (layer) {
+// 		if (layer instanceof L.Marker) {
+// 			map.removeLayer(layer);
+// 		}
+// 	});
+// 	var markers = [];
+// 	for (var i=0; i<timelineJSON.label.length; i++;) {
+// 		markers.push(L.Marker(locToCoord[timelineJSON.label[i]]));
+// 	}
+// 	L.featureGroup(markers).addTo(map);
+// }
+//
+// L.control.timelineSlider({
+//                 timelineItems: getDateList(csv),
+//                 changeMap: refreshData})
+//             .addTo(myMap);
 
 </script>
 
