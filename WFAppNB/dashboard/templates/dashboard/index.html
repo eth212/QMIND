@@ -24,8 +24,9 @@
 <!-- leaflet map imports -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-<script src="{% static "dashboard/leaflet-timeline-slider.js" %}"></script>
+<script src="{% static "dashboard/SliderControl.js" %}"></script>
 <script src="{% static "dashboard/PruneCluster.js" %}"></script>
+<!-- <script src="{% static "dashboard/All_Locations_LongLat.csv" %}"</script> -->
 
 <!-- leaflet map functions, actual map/function use is at bottom of file -->
 <script type="text/javascript">
@@ -58,6 +59,66 @@ function onEachFeature(feature, layer) {
 	 mouseout: resetHighlight,
 	});
 }
+
+// input: list of all sale locations, output: json with locations as keys and coords as values
+function mapLocationsToCoords(locData) {
+	locations = [];
+	for (var i=0; i<locData.length; i++) {
+		if (!locations.includes(locData[i])) {
+			locations.push(locData[i]);
+		}
+	}
+
+	json = {};
+	for (var i=0; i<locations.length; i++) {
+		if (!json.hasOwnProperty(locations[i])) {
+			// json.locations[i] =  fill this in later
+		}
+	}
+	return json;
+}
+
+// SKELETON FUNCTION UPDATE WHEN WORKING
+function mapDatesToObjects(csv) {
+	json = {};
+	for(var i=0; i<csv.length; i++) {
+			if (Array.isArray(jsonTrash[csv[i].date])) {
+				json[csv[i].date].push(csv[i].tractor);
+			}
+			else {
+				json[csv[i].date] = [csv[i].tractor];
+			}
+	}
+	return json;
+}
+
+// SKELETON FUNCTION UPDATE WHEN WORKING
+function getDateList(csv) {
+	dateList = [];
+	for(var i=0; i<csv.length; i++) {
+		if (!dateList.includes(csv[i].date)) {
+			dateList.push(csv[i].date);
+		}
+	}
+	return dateList.sort();
+}
+
+function refreshData({label, value, map}) {
+	map.eachLayer(function (layer) {
+		if (layer instanceof L.Marker) {
+			map.removeLayer(layer);
+		}
+	});
+	var markers = [];
+	for (var i=0; i<timelineJSON.label.length; i++) {
+		markers.push(L.Marker(locToCoord[timelineJSON.label[i]]));
+	}
+	L.featureGroup(markers).addTo(map);
+}
+
+var timeslider = undefined;			//holds reference to slider which its added to the map in the $.get_results function
+var cityCoords = {{ city_coords | safe }};		//used to geocode cities for map, passed from views.py on startup
+
 </script>
 
 <!-- Main JS that handles user interaction and sending/receiving data from views.py and csv files -->
@@ -277,7 +338,23 @@ $.get('/dashboard/populatedropdowns', {}, function(data) {
 // Get data upon selecting data and clicking get results
 $('#get_results').click(function() {
 
+		$.get('/dashboard/getSliderData', {}, function(data) {
+			var locDate = data;
+		});
 
+		if (timeslider !== undefined) {
+			myMap.removeControl(timeslider);
+		}
+
+		timeslider = L.control.sliderControl({})
+		// timeslider = L.control.timelineSlider({
+		// 								timelineItems: getDateList(csv),
+		// 								changeMap: refreshData})
+		// 						.addTo(myMap);
+
+		// updating leaflet map
+		locToCoord = mapLocationsToCoords(csv);
+		timelineJSON = mapDatesToObjects(csv);
 
 		// Clear current plots
 		Plotly.purge(myDiv11);
@@ -1239,6 +1316,7 @@ thead {
   					<option value="LowSale">Sort by Lowest Sale</option>
   					<option value="SoldAssets">Sort by Sold Assets</option>
 				</select>
+				<!-- <div class="btn-group">Year: <select id="mapYear" class="dropdown-select"></select></div> -->
               </div>
           </div>
         	</div>
@@ -1398,71 +1476,6 @@ L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
 var statesData = {{ us_states | safe }};
 var geojson;
 geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
-
-// // SKELETON FUNCTION UPDATE WHEN WORKING
-// function mapLocationsToCoords(csv) {
-// 	locations = [];
-// 	for (var i=0; i<csv.length; i++;) {
-// 		if (!locations.includes(csv[i].location)) {
-// 			locations.push(csv[i].location);
-// 		}
-// 	}
-//
-// 	json = {};
-// 	for (var i=0; i<locations.length; i++;) {
-// 		if (!json.hasOwnProperty(locations[i])) {
-// 			// json.locations[i] =  fill this in later
-// 		}
-// 	}
-// 	return json;
-// }
-//
-// locToCoord = mapLocationsToCoords(csv);
-//
-// // SKELETON FUNCTION UPDATE WHEN WORKING
-// function mapDatesToObjects(csv) {
-// 	json = {};
-// 	for(var i=0; i<csv.length; i++;) {
-// 			if (Array.isArray(jsonTrash[csv[i].date])) {
-// 				json[csv[i].date].push(csv[i].tractor);
-// 			}
-// 			else {
-// 				json[csv[i].date] = [csv[i].tractor];
-// 			}
-// 	}
-// 	return json;
-// }
-//
-// timelineJSON = mapDatesToObjects(csv);
-//
-// // SKELETON FUNCTION UPDATE WHEN WORKING
-// function getDateList(csv) {
-// 	dateList = [];
-// 	for(var i=0; i<csv.length; i++;) {
-// 		if (!dateList.includes(csv[i].date)) {
-// 			dateList.push(csv[i].date);
-// 		}
-// 	}
-// 	return dateList.sort();
-// }
-//
-// function refreshData({label, value, map}) {
-// 	map.eachLayer(function (layer) {
-// 		if (layer instanceof L.Marker) {
-// 			map.removeLayer(layer);
-// 		}
-// 	});
-// 	var markers = [];
-// 	for (var i=0; i<timelineJSON.label.length; i++;) {
-// 		markers.push(L.Marker(locToCoord[timelineJSON.label[i]]));
-// 	}
-// 	L.featureGroup(markers).addTo(map);
-// }
-//
-// L.control.timelineSlider({
-//                 timelineItems: getDateList(csv),
-//                 changeMap: refreshData})
-//             .addTo(myMap);
 
 </script>
 

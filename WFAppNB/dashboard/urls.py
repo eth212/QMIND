@@ -3,7 +3,7 @@ from django.conf.urls import url, include
 from django.urls import path
 from . import views
 
-# The first path is just a reference to extend the urls.py of the WFApp folder. 
+# The first path is just a reference to extend the urls.py of the WFApp folder.
 # In the urls.py of the WFApp folder, "path('dashboard/', include('dashboard.urls'))" is seen.
 # Therefore, the index.html file is accessed when adding 'dashboard/' to the url of the server.
 
@@ -33,5 +33,6 @@ urlpatterns = [
 	url('updateSearchTerm1', views.updateSearchTerm1, name='updateSearchTerm1'),
 	url('update_hist_data', views.update_hist_data, name='update_hist_data'),
 	url('populate_dropdowns_location', views.populate_dropdowns_location, name='populate_dropdowns_location'),
+    url('getSliderData', views.getSliderData, name='getSliderData')
 	# url('update_hist_location_data', views.update_hist_location_data, name='update_hist_location_data'),
 	]
