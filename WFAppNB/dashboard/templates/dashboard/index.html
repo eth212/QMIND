@@ -24,9 +24,8 @@
 <!-- leaflet map imports -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-<script src="{% static "dashboard/SliderControl.js" %}"></script>
+<script src="{% static "dashboard/leaflet-timeline-slider.js" %}"></script>
 <script src="{% static "dashboard/PruneCluster.js" %}"></script>
-<!-- <script src="{% static "dashboard/All_Locations_LongLat.csv" %}"</script> -->
 
 <!-- leaflet map functions, actual map/function use is at bottom of file -->
 <script type="text/javascript">
@@ -61,63 +60,65 @@ function onEachFeature(feature, layer) {
 }
 
 // input: list of all sale locations, output: json with locations as keys and coords as values
-function mapLocationsToCoords(locData) {
-	locations = [];
-	for (var i=0; i<locData.length; i++) {
-		if (!locations.includes(locData[i])) {
-			locations.push(locData[i]);
-		}
-	}
-
-	json = {};
-	for (var i=0; i<locations.length; i++) {
-		if (!json.hasOwnProperty(locations[i])) {
-			// json.locations[i] =  fill this in later
-		}
-	}
-	return json;
-}
-
-// SKELETON FUNCTION UPDATE WHEN WORKING
-function mapDatesToObjects(csv) {
-	json = {};
-	for(var i=0; i<csv.length; i++) {
-			if (Array.isArray(jsonTrash[csv[i].date])) {
-				json[csv[i].date].push(csv[i].tractor);
-			}
-			else {
-				json[csv[i].date] = [csv[i].tractor];
-			}
-	}
-	return json;
-}
+// function mapLocationsToCoords(locData) {
+// 	locations = [];
+// 	for (var i=0; i<locData.length; i++) {
+// 		if (!locations.includes(locData[i])) {
+// 			locations.push(locData[i]);
+// 		}
+// 	}
+//
+// 	json = {};
+// 	for (var i=0; i<locations.length; i++) {
+// 		if (!json.hasOwnProperty(locations[i])) {
+// 			// json.locations[i] =  fill this in later
+// 		}
+// 	}
+// 	return json;
+// }
 
 // SKELETON FUNCTION UPDATE WHEN WORKING
-function getDateList(csv) {
-	dateList = [];
-	for(var i=0; i<csv.length; i++) {
-		if (!dateList.includes(csv[i].date)) {
-			dateList.push(csv[i].date);
-		}
-	}
-	return dateList.sort();
-}
+// function mapDatesToObjects(csv) {
+// 	json = {};
+// 	for(var i=0; i<csv.length; i++) {
+// 			if (Array.isArray(jsonTrash[csv[i].date])) {
+// 				json[csv[i].date].push(csv[i].tractor);
+// 			}
+// 			else {
+// 				json[csv[i].date] = [csv[i].tractor];
+// 			}
+// 	}
+// 	return json;
+// }
+
+// function getDateList(saledates, year) {
+// 	dateList = [];
+// 	for(var i=0; i<salesdates.length; i++) {
+// 		if (salesdates[i].slice(0,4)==year && !dateList.includes(salesdates[i].slice(0,7))) {
+// 			dateList.push(salesdate[i].slice(0,7));
+// 		}
+// 	}
+// 	return dateList.sort();
+// }
+
+var timeslider = undefined;			//holds reference to slider which its added to the map in the $.get_results function
+var cityCoords = {{ city_coords | safe }};		//used to geocode cities for map, passed from views.py on startup
 
 function refreshData({label, value, map}) {
 	map.eachLayer(function (layer) {
-		if (layer instanceof L.Marker) {
+		if (layer instanceof L.featureGroup) {
 			map.removeLayer(layer);
 		}
 	});
 	var markers = [];
-	for (var i=0; i<timelineJSON.label.length; i++) {
-		markers.push(L.Marker(locToCoord[timelineJSON.label[i]]));
+	for (var i=0; i<locDate.saledate.length; i++) {
+		if (locData.saledate[i].slice(0,7) == label) {
+			markers.push(L.Marker(cityCoords[locDate.location[i]]));
+		}
+
 	}
 	L.featureGroup(markers).addTo(map);
 }
-
-var timeslider = undefined;			//holds reference to slider which its added to the map in the $.get_results function
-var cityCoords = {{ city_coords | safe }};		//used to geocode cities for map, passed from views.py on startup
 
 </script>
 
@@ -338,24 +339,6 @@ $.get('/dashboard/populatedropdowns', {}, function(data) {
 // Get data upon selecting data and clicking get results
 $('#get_results').click(function() {
 
-		$.get('/dashboard/getSliderData', {}, function(data) {
-			var locDate = data;
-		});
-
-		if (timeslider !== undefined) {
-			myMap.removeControl(timeslider);
-		}
-
-		timeslider = L.control.sliderControl({})
-		// timeslider = L.control.timelineSlider({
-		// 								timelineItems: getDateList(csv),
-		// 								changeMap: refreshData})
-		// 						.addTo(myMap);
-
-		// updating leaflet map
-		locToCoord = mapLocationsToCoords(csv);
-		timelineJSON = mapDatesToObjects(csv);
-
 		// Clear current plots
 		Plotly.purge(myDiv11);
 		Plotly.purge(myDiv12);
@@ -491,8 +474,34 @@ $('#get_results').click(function() {
         }
     };
 
+		// getting data required for location map
+		$.get('/dashboard/getSliderData', {}, function(data) {
+			var locDate = data;
+		});
+		$('#MapYear').html(data['years_html']);		// updating map dropdown menu for years
     // Plotly.plot(myDiv, data2, layout, {showLink: false});
 
+});
+
+// Location Map Update
+$('#mapYear').change(function () {
+	year = $('#mapYear').val();
+
+	if (timeslider !== undefined) {
+		myMap.removeControl(timeslider);
+	}
+
+	// getting list of all months in selected year to pass to map slider
+	datelist = [];
+	for (var i=1; i<=12; i++) {
+		datelist.push(year.concat('-', i.toString()));
+	}
+	// timeslider = L.control.sliderControl({})
+	timeslider = L.control.timelineSlider({
+									timelineItems: datelist,
+									changeMap: refreshData,
+									position: "bottomleft"})
+							.addTo(myMap);
 });
 
 // Histogram Plots

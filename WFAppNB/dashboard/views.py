@@ -21,13 +21,13 @@ cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER=192.168.99.100;PORT=1433;UID=s
 
 # Load index.html on searching servername +'/dashboard/'
 def index(request):
-    with open("dashboard/static/dashboard/us-states.json") as geoJSON:
-        us_states = json.load(geoJSON)
+	with open("dashboard/static/dashboard/us-states.json") as geoJSON:
+		us_states = json.load(geoJSON)
 
-    df = pd.read_csv("dashboard/static/dashboard/csv/All_Locations_LongLat.csv")
-    city_coords = {'city': df['Location'].tolist(), 'lat': df['Latitude'].tolist(), 'long': df['Longitude'].tolist()}
-    return render(request, 'dashboard/index.html', context={'us_states': us_states,
-                                                            'city_coords': json.dumps(city_coords)})
+	df = pd.read_csv("dashboard/static/dashboard/csv/All_Locations_LongLat.csv")
+	city_coords = {'city': df['Location'].tolist(), 'lat': df['Latitude'].tolist(), 'long': df['Longitude'].tolist()}
+	return render(request, 'dashboard/index.html', context={'us_states': us_states,
+															'city_coords': json.dumps(city_coords)})
 
 # Update the Google Search trend data when the user clicks a related search term or custom searches their own
 def updateSearchTerm1(request):
@@ -81,11 +81,11 @@ def getGoogleTrends(request):
 							  'used ' + Dutytype,
 							  'used ' + Category],
 						 2:['used '+ Dutytype,
-						 	  Dutytype + ' for sale',
-						 	  'used ' + Category,
-						 	  Category + ' for sale'],
+							  Dutytype + ' for sale',
+							  'used ' + Category,
+							  Category + ' for sale'],
 						 3:['used ' + Category,
-						 	  Category + ' for sale']}
+							  Category + ' for sale']}
 
 
 		# Choose selector based on what data the user has selected from the Data Entry dropdown lists
@@ -943,7 +943,7 @@ def populatedropdownsDuty(request):
 			DropDownItem = '<option value="%s">%s (%s)</option>' % (item, item, dfModelcount[item])
 			DropDownListModel = DropDownListModel + DropDownItem
 
-        # Populate Year HTML dropdown string
+		# Populate Year HTML dropdown string
 		DropDownListYear = "<option value="">Select Year</option>"
 		for item in dfYear:
 			if item is None:
@@ -997,7 +997,7 @@ def populatedropdownsMake(request):
 			DropDownItem = '<option value="%s">%s (%s)</option>' % (item, item, dfModelcount[item])
 			DropDownListModel = DropDownListModel + DropDownItem
 
-        # Populate Year HTML dropdown string
+		# Populate Year HTML dropdown string
 		DropDownListYear = "<option value="">Select Year</option>"
 		for item in dfYear:
 			if item is None:
@@ -1048,7 +1048,7 @@ def populatedropdownsModel(request):
 		# Get sorted lists of unique models, and years, respectively.
 		dfYear = Data[['Year']].drop_duplicates('Year').sort_values('Year')['Year']
 
-        # Populate Year HTML dropdown string
+		# Populate Year HTML dropdown string
 		DropDownListYear = "<option value="">Select Year</option>"
 		for item in dfYear:
 			if item is None:
@@ -1100,7 +1100,7 @@ def populate_dropdowns_location(request):
 		# Get sorted lists of unique models, and years, respectively.
 		dfYear = Data[['Year']].drop_duplicates('Year').sort_values('Year')['Year']
 
-        # Populate Year HTML dropdown string
+		# Populate Year HTML dropdown string
 		DropDownListYear = "<option value="">Select Year</option>"
 		for item in dfYear:
 			if item is None:
@@ -1115,33 +1115,33 @@ def populate_dropdowns_location(request):
 
 # get data needed for leaflet map slider,
 def getSliderData(request):
-    if request.method == 'GET':
-        df = pd.read_csv('dashboard/static/dashboard/csv/AllData.csv')
-        years = sorted(list(set(df['SaleDate'].astype(str).slice(0,4).tolist())))
+	if request.method == 'GET':
+		df = pd.read_csv('dashboard/static/dashboard/csv/AllData.csv')
+		years = sorted(list(set(df['SaleDate'].astype(str).slice(0,4).tolist())))
 
-        DropDownListYear = "<option value="">Select Year</option>"
+		DropDownListYear = "<option value="">Select Year</option>"
 		for item in years:
 			if item is None:
 				continue
 			DropDownItem = '<option value="%s">%s</option>' % (item, item)
 			DropDownListYear = DropDownListYear + DropDownItem
 
-        json = {'location': df['Location'], 'saledate': df['SaleDate'], 'years': years, 'years_html': DropDownListYear}
-        return JsonResponse(json)
-    return render(request)
-
-# fills in year dropdown on leaflet map
-def populatedropdownsMapYear(request):
-    if request.method == 'GET':
-        df = pd.read_csv('dashboard/static/dashboard/csv/AllData.csv')
-        years = sorted(list(set(df['SaleDate'].astype(str).slice(0,4).tolist())))
-
-        DropDownListYear = "<option value="">Select Year</option>"
-		for item in years:
-			if item is None:
-				continue
-			DropDownItem = '<option value="%s">%s</option>' % (item, item)
-			DropDownListYear = DropDownListYear + DropDownItem
-        json = {'html': DropDownListYear}
-        return JsonResponse(json)
-    return render(request)
+		json = {'location': df['Location'], 'saledate': df['SaleDate'], 'years': years, 'years_html': DropDownListYear}
+		return JsonResponse(json)
+	return render(request)
+#
+# # fills in year dropdown on leaflet map
+# def populatedropdownsMapYear(request):
+#     if request.method == 'GET':
+#         df = pd.read_csv('dashboard/static/dashboard/csv/AllData.csv')
+#         years = sorted(list(set(df['SaleDate'].astype(str).slice(0,4).tolist())))
+#
+#         DropDownListYear = "<option value="">Select Year</option>"
+# 		for item in years:
+# 			if item is None:
+# 				continue
+# 			DropDownItem = '<option value="%s">%s</option>' % (item, item)
+# 			DropDownListYear = DropDownListYear + DropDownItem
+#         json = {'html': DropDownListYear}
+#         return JsonResponse(json)
+#     return render(request)
