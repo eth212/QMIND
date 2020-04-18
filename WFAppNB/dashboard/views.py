@@ -29,12 +29,13 @@ def index(request):
     with open("dashboard/static/dashboard/us-states.json") as geoJSON:
         us_states = json.load(geoJSON)
 
-    df = pd.read_csv(
-        "dashboard/static/dashboard/csv/All_Locations_LongLat.csv")
-    city_coords = {'city': df['Location'].tolist(
-    ), 'lat': df['Latitude'].tolist(), 'long': df['Longitude'].tolist()}
-    return render(request, 'dashboard/index.html', context={'us_states': us_states,
-                                                            'city_coords': json.dumps(city_coords)})
+    df = pd.read_csv("dashboard/static/dashboard/csv/All_Locations_LongLat.csv")
+    city_coords = {}
+    for i, city in enumerate(df['Location']):
+        if city not in city_coords.keys():
+            city_coords[city] = [df['Latitude'][i], df['Longitude'][i]]
+    # city_coords = {'city': df['Location'].tolist(), 'lat': df['Latitude'].tolist(), 'long': df['Longitude'].tolist()}
+    return render(request, 'dashboard/index.html', context={'us_states': us_states, 'city_coords': json.dumps(city_coords)})
 
 # Update the Google Search trend data when the user clicks a related search term or custom searches their own
 
@@ -1224,8 +1225,9 @@ def populate_dropdowns_location(request):
 def getSliderData(request):
     if request.method == 'GET':
         df = pd.read_csv('dashboard/static/dashboard/csv/AllData.csv')
-        years = sorted(
-            list(set(df['SaleDate'].astype(str).slice(0, 4).tolist())))
+        datesStr = df['SaleDate'].astype(str)
+        yearsStr = datesStr.str.slice(0, 4).tolist()
+        years = sorted(list(set(yearsStr)))
 
         DropDownListYear = "<option value="">Select Year</option>"
         for item in years:
@@ -1234,24 +1236,24 @@ def getSliderData(request):
             DropDownItem = '<option value="%s">%s</option>' % (item, item)
             DropDownListYear = DropDownListYear + DropDownItem
 
-        json = {'location': df['Location'], 'saledate': df['SaleDate'],
+        json = {'location': df['Location'].tolist(), 'saledate': df['SaleDate'].tolist(),
                 'years': years, 'years_html': DropDownListYear}
         return JsonResponse(json)
     return render(request)
 
 
-def populatedropdownsMapYear(request):
-    if request.method == 'GET':
-        df = pd.read_csv('dashboard/static/dashboard/csv/AllData.csv')
-        years = sorted(
-            list(set(df['SaleDate'].astype(str).slice(0, 4).tolist())))
-
-        DropDownListYear = "<option value="">Select Year</option>"
-        for item in years:
-            if item is None:
-                continue
-            DropDownItem = '<option value="%s">%s</option>' % (item, item)
-            DropDownListYear = DropDownListYear + DropDownItem
-        json = {'html': DropDownListYear}
-        return JsonResponse(json)
-    return render(request)
+# def populatedropdownsMapYear(request):
+#     if request.method == 'GET':
+#         df = pd.read_csv('dashboard/static/dashboard/csv/AllData.csv')
+#         years = sorted(
+#             list(set(df['SaleDate'].astype(str).slice(0, 4).tolist())))
+#
+#         DropDownListYear = "<option value="">Select Year</option>"
+#         for item in years:
+#             if item is None:
+#                 continue
+#             DropDownItem = '<option value="%s">%s</option>' % (item, item)
+#             DropDownListYear = DropDownListYear + DropDownItem
+#         json = {'html': DropDownListYear}
+#         return JsonResponse(json)
+#     return render(request)

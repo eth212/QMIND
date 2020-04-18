@@ -39,7 +39,7 @@ urlpatterns = [
     url('populate_dropdowns_location', views.populate_dropdowns_location,
         name='populate_dropdowns_location'),
     url('getSliderData', views.getSliderData, name='getSliderData'),
-    url('populatedropdownsMapYear', views.populatedropdownsMapYear,
-        name='populatedropdownsMapYear')
+    # url('populatedropdownsMapYear', views.populatedropdownsMapYear,
+    #     name='populatedropdownsMapYear')
     # url('update_hist_location_data', views.update_hist_location_data, name='update_hist_location_data'),
 ]

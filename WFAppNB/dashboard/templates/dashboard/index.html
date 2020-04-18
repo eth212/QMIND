@@ -103,17 +103,20 @@ function onEachFeature(feature, layer) {
 
 var timeslider = undefined;			//holds reference to slider which its added to the map in the $.get_results function
 var cityCoords = {{ city_coords | safe }};		//used to geocode cities for map, passed from views.py on startup
+// console.log(cityCoords)
 
-function refreshData({label, value, map}) {
+function refreshData({label, value, map, data}) {
 	map.eachLayer(function (layer) {
-		if (layer instanceof L.featureGroup) {
+		if (layer instanceof L.Marker) {
 			map.removeLayer(layer);
 		}
 	});
 	var markers = [];
-	for (var i=0; i<locDate.saledate.length; i++) {
-		if (locData.saledate[i].slice(0,7) == label) {
-			markers.push(L.Marker(cityCoords[locDate.location[i]]));
+	for (var i=0; i<data.saledate.length; i++) {
+		// console.log(data.saledate[i].slice(0,7), ' ', label, ' ', label==data.saledate[i].slice(0,7));
+		if (data.saledate[i].slice(0,7) == label) {
+			// console.log(data.location[i], ' ', cityCoords[data.location[i]])
+			markers.push(new L.Marker(cityCoords[data.location[i].toUpperCase()]));
 		}
 
 	}
@@ -336,6 +339,7 @@ $.get('/dashboard/populatedropdowns', {}, function(data) {
       	$('#Category').html(data['0']);
 });
 
+var locDate = "shits broke capn";
 // Get data upon selecting data and clicking get results
 $('#get_results').click(function() {
 
@@ -476,9 +480,10 @@ $('#get_results').click(function() {
 
 		// getting data required for location map
 		$.get('/dashboard/getSliderData', {}, function(data) {
-			var locDate = data;
+			locDate = data;
+			$('#mapYear').html(data['years_html']);		// updating map dropdown menu for years
 		});
-		$('#MapYear').html(data['years_html']);		// updating map dropdown menu for years
+
     // Plotly.plot(myDiv, data2, layout, {showLink: false});
 
 });
@@ -494,13 +499,20 @@ $('#mapYear').change(function () {
 	// getting list of all months in selected year to pass to map slider
 	datelist = [];
 	for (var i=1; i<=12; i++) {
-		datelist.push(year.concat('-', i.toString()));
+		if (i<10) {
+			datelist.push(year.concat('-0', i.toString()));
+		} else {
+			datelist.push(year.concat('-', i.toString()));
+		}
+
 	}
 	// timeslider = L.control.sliderControl({})
 	timeslider = L.control.timelineSlider({
 									timelineItems: datelist,
 									changeMap: refreshData,
-									position: "bottomleft"})
+									extraChangeMapParams: {data: locDate},
+									position: "bottomleft",
+									labelWidth: "55px"})
 							.addTo(myMap);
 });
 
@@ -1315,7 +1327,7 @@ thead {
     	<div style="border-color:#AE2573 !important;color:black;" class="panel">
         	<div style="background-color: #AE2573; color:white" class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> Visualize the above location data
         	<div class="pull-right">
-          	<div class="btn-group">
+          	<!-- <div class="btn-group">
                 <select style="color: blue" id="MapDataRankBy" class="dropdown-select">
                 	<option value="AvgPrice">Sort by Average Price</option>
   					<option value="TotalRev">Sort by Total Revenue</option>
@@ -1325,8 +1337,8 @@ thead {
   					<option value="LowSale">Sort by Lowest Sale</option>
   					<option value="SoldAssets">Sort by Sold Assets</option>
 				</select>
-				<!-- <div class="btn-group">Year: <select id="mapYear" class="dropdown-select"></select></div> -->
-              </div>
+            </div> -->
+					<div class="btn-group Black">Year: <select id="mapYear" class="dropdown-select"></select></div>
           </div>
         	</div>
         <div class="panel-body">
