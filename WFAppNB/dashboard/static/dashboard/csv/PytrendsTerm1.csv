@@ -1,50 +1,50 @@
-geoName,used kenworth,code
-Alabama,0,AL
+geoName,used freightliner,code
+Alabama,48,AL
 Alaska,0,AK
 Arizona,0,AZ
 Arkansas,0,AR
-California,8,CA
+California,43,CA
 Colorado,0,CO
 Connecticut,0,CT
 Delaware,0,DE
-Florida,8,FL
-Georgia,6,GA
+Florida,36,FL
+Georgia,100,GA
 Hawaii,0,HI
 Idaho,0,ID
-Illinois,19,IL
-Indiana,0,IN
+Illinois,40,IL
+Indiana,83,IN
 Iowa,0,IA
-Kansas,0,KS
+Kansas,44,KS
 Kentucky,0,KY
 Louisiana,0,LA
 Maine,0,ME
 Maryland,0,MD
 Massachusetts,0,MA
-Michigan,0,MI
+Michigan,36,MI
 Minnesota,0,MN
 Mississippi,0,MS
 Missouri,0,MO
 Montana,0,MT
-Nebraska,0,NE
+Nebraska,84,NE
 Nevada,0,NV
 New Hampshire,0,NH
-New Jersey,0,NJ
+New Jersey,32,NJ
 New Mexico,0,NM
-New York,19,NY
-North Carolina,19,NC
-North Dakota,100,ND
-Ohio,17,OH
+New York,55,NY
+North Carolina,57,NC
+North Dakota,0,ND
+Ohio,45,OH
 Oklahoma,0,OK
 Oregon,0,OR
-Pennsylvania,14,PA
+Pennsylvania,32,PA
 Rhode Island,0,RI
-South Carolina,0,SC
+South Carolina,72,SC
 South Dakota,0,SD
-Tennessee,0,TN
-Texas,18,TX
+Tennessee,38,TN
+Texas,53,TX
 Utah,0,UT
 Vermont,0,VT
-Virginia,18,VA
+Virginia,53,VA
 Washington,0,WA
 West Virginia,0,WV
 Wisconsin,0,WI

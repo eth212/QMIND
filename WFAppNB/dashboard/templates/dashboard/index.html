@@ -111,16 +111,35 @@ function refreshData({label, value, map, data}) {
 			map.removeLayer(layer);
 		}
 	});
-	var markers = [];
+	var cityCounts = {};
 	for (var i=0; i<data.saledate.length; i++) {
 		// console.log(data.saledate[i].slice(0,7), ' ', label, ' ', label==data.saledate[i].slice(0,7));
 		if (data.saledate[i].slice(0,7) == label) {
+			city = data.location[i].replace(',', '')
+			if (cityCounts.hasOwnProperty(city)) {
+				cityCounts[city] += 1;
+			} else {
+				cityCounts[city] = 1;
+			}
 			// console.log(data.location[i], ' ', cityCoords[data.location[i]])
-			markers.push(new L.Marker(cityCoords[data.location[i].toUpperCase()]));
+			// markers.push(new L.Marker(cityCoords[data.location[i].toUpperCase()]));
 		}
-
 	}
-	L.featureGroup(markers).addTo(map);
+	console.log(cityCounts);
+	var markerList = [];
+	for (var i=0; i<Object.keys(cityCounts).length; i++) {
+		city = Object.keys(cityCounts)[i];
+		var marker = new L.Marker(cityCoords[city]);
+		marker.bindPopup("Number Sold: ".concat(cityCounts[city].toString()))
+		marker.on('mouseover', function (e) {
+					 this.openPopup();
+			 });
+		 marker.on('mouseout', function (e) {
+				 this.closePopup();
+		 });
+		markerList.push(marker);
+	}
+	L.featureGroup(markerList).addTo(map);
 }
 
 </script>

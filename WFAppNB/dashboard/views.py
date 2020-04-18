@@ -31,9 +31,10 @@ def index(request):
 
     df = pd.read_csv("dashboard/static/dashboard/csv/All_Locations_LongLat.csv")
     city_coords = {}
-    for i, city in enumerate(df['Location']):
-        if city not in city_coords.keys():
-            city_coords[city] = [df['Latitude'][i], df['Longitude'][i]]
+    for i, city in enumerate(df['Location'].dropna()):
+        noComma = city.replace(',', '')
+        if noComma not in city_coords.keys():
+            city_coords[noComma] = [df['Latitude'][i], df['Longitude'][i]]
     # city_coords = {'city': df['Location'].tolist(), 'lat': df['Latitude'].tolist(), 'long': df['Longitude'].tolist()}
     return render(request, 'dashboard/index.html', context={'us_states': us_states, 'city_coords': json.dumps(city_coords)})
 
