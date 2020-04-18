@@ -52,6 +52,7 @@ function resetHighlight(e) {
 	geojson.resetStyle(e.target);
 }
 
+// highlights state on hover, resets highlighy on mouseout
 function onEachFeature(feature, layer) {
 	layer.on({
 	 mouseover: highlightFeature,
@@ -59,61 +60,22 @@ function onEachFeature(feature, layer) {
 	});
 }
 
-// input: list of all sale locations, output: json with locations as keys and coords as values
-// function mapLocationsToCoords(locData) {
-// 	locations = [];
-// 	for (var i=0; i<locData.length; i++) {
-// 		if (!locations.includes(locData[i])) {
-// 			locations.push(locData[i]);
-// 		}
-// 	}
-//
-// 	json = {};
-// 	for (var i=0; i<locations.length; i++) {
-// 		if (!json.hasOwnProperty(locations[i])) {
-// 			// json.locations[i] =  fill this in later
-// 		}
-// 	}
-// 	return json;
-// }
-
-// SKELETON FUNCTION UPDATE WHEN WORKING
-// function mapDatesToObjects(csv) {
-// 	json = {};
-// 	for(var i=0; i<csv.length; i++) {
-// 			if (Array.isArray(jsonTrash[csv[i].date])) {
-// 				json[csv[i].date].push(csv[i].tractor);
-// 			}
-// 			else {
-// 				json[csv[i].date] = [csv[i].tractor];
-// 			}
-// 	}
-// 	return json;
-// }
-
-// function getDateList(saledates, year) {
-// 	dateList = [];
-// 	for(var i=0; i<salesdates.length; i++) {
-// 		if (salesdates[i].slice(0,4)==year && !dateList.includes(salesdates[i].slice(0,7))) {
-// 			dateList.push(salesdate[i].slice(0,7));
-// 		}
-// 	}
-// 	return dateList.sort();
-// }
-
 var timeslider = undefined;			//holds reference to slider which its added to the map in the $.get_results function
 var cityCoords = {{ city_coords | safe }};		//used to geocode cities for map, passed from views.py on startup
-// console.log(cityCoords)
 
+// executed when slider position is changed
+// label: label of slider notch, value: index of slider notch, map: location map, data: holds variable locData
 function refreshData({label, value, map, data}) {
+	// remove old markers
 	map.eachLayer(function (layer) {
 		if (layer instanceof L.Marker) {
 			map.removeLayer(layer);
 		}
 	});
+
+	// cityCounts maps cities where item is sold in selected month to the # of sales that month
 	var cityCounts = {};
 	for (var i=0; i<data.saledate.length; i++) {
-		// console.log(data.saledate[i].slice(0,7), ' ', label, ' ', label==data.saledate[i].slice(0,7));
 		if (data.saledate[i].slice(0,7) == label) {
 			city = data.location[i].replace(',', '')
 			if (cityCounts.hasOwnProperty(city)) {
@@ -121,16 +83,15 @@ function refreshData({label, value, map, data}) {
 			} else {
 				cityCounts[city] = 1;
 			}
-			// console.log(data.location[i], ' ', cityCoords[data.location[i]])
-			// markers.push(new L.Marker(cityCoords[data.location[i].toUpperCase()]));
 		}
 	}
-	console.log(cityCounts);
+
+	// makes list of markers for cities with sales in selected month
 	var markerList = [];
 	for (var i=0; i<Object.keys(cityCounts).length; i++) {
 		city = Object.keys(cityCounts)[i];
 		var marker = new L.Marker(cityCoords[city]);
-		marker.bindPopup("Number Sold: ".concat(cityCounts[city].toString()))
+		marker.bindPopup(city.concat("<br>Number Sold: ", cityCounts[city].toString()))	// popup that appears on marker hover
 		marker.on('mouseover', function (e) {
 					 this.openPopup();
 			 });
@@ -141,7 +102,6 @@ function refreshData({label, value, map, data}) {
 	}
 	L.featureGroup(markerList).addTo(map);
 }
-
 </script>
 
 <!-- Main JS that handles user interaction and sending/receiving data from views.py and csv files -->
@@ -358,7 +318,7 @@ $.get('/dashboard/populatedropdowns', {}, function(data) {
       	$('#Category').html(data['0']);
 });
 
-var locDate = "shits broke capn";
+var locDate = undefined;
 // Get data upon selecting data and clicking get results
 $('#get_results').click(function() {
 
@@ -507,10 +467,11 @@ $('#get_results').click(function() {
 
 });
 
-// Location Map Update
+// activates when changing Year dropdown on location map
 $('#mapYear').change(function () {
 	year = $('#mapYear').val();
 
+	// remove old slider
 	if (timeslider !== undefined) {
 		myMap.removeControl(timeslider);
 	}
@@ -523,9 +484,8 @@ $('#mapYear').change(function () {
 		} else {
 			datelist.push(year.concat('-', i.toString()));
 		}
-
 	}
-	// timeslider = L.control.sliderControl({})
+	// adding new slider
 	timeslider = L.control.timelineSlider({
 									timelineItems: datelist,
 									changeMap: refreshData,

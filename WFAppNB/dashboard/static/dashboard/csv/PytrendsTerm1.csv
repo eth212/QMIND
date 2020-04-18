@@ -1,51 +1,51 @@
-geoName,used freightliner,code
-Alabama,48,AL
+geoName,used peterbilt,code
+Alabama,0,AL
 Alaska,0,AK
 Arizona,0,AZ
 Arkansas,0,AR
-California,43,CA
+California,51,CA
 Colorado,0,CO
 Connecticut,0,CT
 Delaware,0,DE
-Florida,36,FL
+Florida,58,FL
 Georgia,100,GA
 Hawaii,0,HI
 Idaho,0,ID
-Illinois,40,IL
-Indiana,83,IN
+Illinois,62,IL
+Indiana,0,IN
 Iowa,0,IA
-Kansas,44,KS
+Kansas,0,KS
 Kentucky,0,KY
 Louisiana,0,LA
 Maine,0,ME
 Maryland,0,MD
 Massachusetts,0,MA
-Michigan,36,MI
+Michigan,0,MI
 Minnesota,0,MN
 Mississippi,0,MS
 Missouri,0,MO
 Montana,0,MT
-Nebraska,84,NE
+Nebraska,86,NE
 Nevada,0,NV
 New Hampshire,0,NH
-New Jersey,32,NJ
+New Jersey,0,NJ
 New Mexico,0,NM
-New York,55,NY
-North Carolina,57,NC
+New York,46,NY
+North Carolina,76,NC
 North Dakota,0,ND
-Ohio,45,OH
+Ohio,67,OH
 Oklahoma,0,OK
 Oregon,0,OR
-Pennsylvania,32,PA
+Pennsylvania,77,PA
 Rhode Island,0,RI
-South Carolina,72,SC
+South Carolina,0,SC
 South Dakota,0,SD
-Tennessee,38,TN
-Texas,53,TX
+Tennessee,90,TN
+Texas,96,TX
 Utah,0,UT
 Vermont,0,VT
-Virginia,53,VA
-Washington,0,WA
+Virginia,0,VA
+Washington,67,WA
 West Virginia,0,WV
 Wisconsin,0,WI
 Wyoming,0,WY
