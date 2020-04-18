@@ -22,17 +22,24 @@ They are called with an AJAX .get() request, and the functions simply return a J
 
 urlpatterns = [
     path('', views.index, name='index'),
-	url('getData', views.getData, name='getData'),
-	url('getGoogleTrends', views.getGoogleTrends, name='getGoogleTrends'),
-	url('updatetabledata', views.updatetabledata, name='updatetabledata'),
-	url('populatedropdownsCat', views.populatedropdownsCat, name='populatedropdownsCat'),
-	url('populatedropdownsDuty', views.populatedropdownsDuty, name='populatedropdownsDuty'),
-	url('populatedropdownsMake', views.populatedropdownsMake, name='populatedropdownsMake'),
-	url('populatedropdownsModel', views.populatedropdownsModel, name='populatedropdownsModel'),
-	url('populatedropdowns', views.populatedropdowns, name='populatedropdowns'),
-	url('updateSearchTerm1', views.updateSearchTerm1, name='updateSearchTerm1'),
-	url('update_hist_data', views.update_hist_data, name='update_hist_data'),
-	url('populate_dropdowns_location', views.populate_dropdowns_location, name='populate_dropdowns_location'),
-    url('getSliderData', views.getSliderData, name='getSliderData')
-	# url('update_hist_location_data', views.update_hist_location_data, name='update_hist_location_data'),
-	]
+    url('getData', views.getData, name='getData'),
+    url('getGoogleTrends', views.getGoogleTrends, name='getGoogleTrends'),
+    url('updatetabledata', views.updatetabledata, name='updatetabledata'),
+    url('populatedropdownsCat', views.populatedropdownsCat,
+        name='populatedropdownsCat'),
+    url('populatedropdownsDuty', views.populatedropdownsDuty,
+        name='populatedropdownsDuty'),
+    url('populatedropdownsMake', views.populatedropdownsMake,
+        name='populatedropdownsMake'),
+    url('populatedropdownsModel', views.populatedropdownsModel,
+        name='populatedropdownsModel'),
+    url('populatedropdowns', views.populatedropdowns, name='populatedropdowns'),
+    url('updateSearchTerm1', views.updateSearchTerm1, name='updateSearchTerm1'),
+    url('update_hist_data', views.update_hist_data, name='update_hist_data'),
+    url('populate_dropdowns_location', views.populate_dropdowns_location,
+        name='populate_dropdowns_location'),
+    url('getSliderData', views.getSliderData, name='getSliderData'),
+    url('populatedropdownsMapYear', views.populatedropdownsMapYear,
+        name='populatedropdownsMapYear')
+    # url('update_hist_location_data', views.update_hist_location_data, name='update_hist_location_data'),
+]
