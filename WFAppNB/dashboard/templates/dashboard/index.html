@@ -29,6 +29,7 @@
 
 <!-- leaflet map functions, actual map/function use is at bottom of file -->
 <script type="text/javascript">
+
 function style(feature) {
 		return {
 				weight: 2,
@@ -37,26 +38,47 @@ function style(feature) {
 		};
 }
 
-function highlightFeature(e) {
+function mouseoverHighlight(e) {
  var layer = e.target;
 
- layer.setStyle({
-		 weight: 5,
-		 color: '#666',
-		 dashArray: '',
-		 fillOpacity: 0.7
- });
+ if (layer.options.color !== '#FFD700') {
+	 layer.setStyle({
+			 weight: 5,
+			 color: '#666',
+			 dashArray: '',
+			 fillOpacity: 0.7
+	 });
+ }
 }
 
 function resetHighlight(e) {
-	geojson.resetStyle(e.target);
+	var layer = e.target;
+
+	if (layer.options.color !== '#FFD700') {
+			geojson.resetStyle(layer);
+	}
+}
+
+var clickedStates = [];
+function onStateClick(e) {
+	var layer = e.target;
+	layer.setStyle({
+		weight: 5,
+		color:'#FFD700',
+		fillOpacity: 0.7
+	});
+
+	if (!clickedStates.includes(layer.feature.id)) {
+			clickedStates.push(layer.feature.id);
+	}
 }
 
 // highlights state on hover, resets highlighy on mouseout
 function onEachFeature(feature, layer) {
 	layer.on({
-	 mouseover: highlightFeature,
+	 mouseover: mouseoverHighlight,
 	 mouseout: resetHighlight,
+	 click: onStateClick
 	});
 }
 
@@ -64,7 +86,7 @@ var timeslider = undefined;			//holds reference to slider which its added to the
 var cityCoords = {{ city_coords | safe }};		//used to geocode cities for map, passed from views.py on startup
 
 // executed when slider position is changed
-// label: label of slider notch, value: index of slider notch, map: location map, data: holds variable locData
+// label: label of slider notch, value: index of slider notch, map: location map, data: holds variable locDate
 function refreshData({label, value, map, data}) {
 	// remove old markers
 	map.eachLayer(function (layer) {
@@ -460,6 +482,7 @@ $('#get_results').click(function() {
 		// getting data required for location map
 		$.get('/dashboard/getSliderData', {}, function(data) {
 			locDate = data;
+			// console.log(data['years_html'])
 			$('#mapYear').html(data['years_html']);		// updating map dropdown menu for years
 		});
 
@@ -493,6 +516,26 @@ $('#mapYear').change(function () {
 									position: "bottomleft",
 									labelWidth: "55px"})
 							.addTo(myMap);
+});
+
+$('#highlight_hist').click(function () {
+	// storing names of all cities with sales within selected states in clickedCities array
+	var locations = locDate.location;
+	var clickedCities = [];
+	for (var i=0; i< locations.length; i++) {
+		stateCode = locations[i].slice(-2);
+		if (clickedStates.includes(stateCode) && !clickedCities.includes(locations[i])) {
+			clickedCities.push(locations[i]);
+		}
+	}
+
+	// resetting clickedStates array and map highlighting
+	clickedStates = [];
+	myMap.eachLayer(function (layer) {
+		if (layer.options.color == '#FFD700') {
+			geojson.resetStyle(layer);
+		}
+	});
 });
 
 // Histogram Plots
@@ -1317,12 +1360,15 @@ thead {
   					<option value="SoldAssets">Sort by Sold Assets</option>
 				</select>
             </div> -->
-					<div class="btn-group Black">Year: <select id="mapYear" class="dropdown-select"></select></div>
+					<div class="btn-group">Year: <select id="mapYear" class="dropdown-select Black"></select></div>
           </div>
         	</div>
         <div class="panel-body">
         <!-- <div id="myDiv"></div> -->
 				<div id="LMap" style="width: 700px; height: 400px"></div>
+				<div class="pull-left">
+					<button class="button" id="highlight_hist">Highlight Selected States in Histogram</button>
+				</div>
 		</div>
     </div>
 </div>
@@ -1464,15 +1510,17 @@ thead {
 <script src='http://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js'></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
-<!-- plonking Ben's map stuff here -->
+<!-- code for location data map, down here because it must be underneath map's <div> element  -->
 <script type="text/javascript">
 var myMap = L.map("LMap").setView([37.8, -96], 4);
 
+// adding map visual
 L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
 	attribution:
 		'&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(myMap);
 
+// geoJSON of states is passed here on startup, uses style/onEachFeature functions from top of file
 var statesData = {{ us_states | safe }};
 var geojson;
 geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
