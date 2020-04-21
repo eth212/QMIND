@@ -493,29 +493,33 @@ $('#get_results').click(function() {
 // activates when changing Year dropdown on location map
 $('#mapYear').change(function () {
 	year = $('#mapYear').val();
+	console.log(year);
 
 	// remove old slider
 	if (timeslider !== undefined) {
 		myMap.removeControl(timeslider);
 	}
 
-	// getting list of all months in selected year to pass to map slider
-	datelist = [];
-	for (var i=1; i<=12; i++) {
-		if (i<10) {
-			datelist.push(year.concat('-0', i.toString()));
-		} else {
-			datelist.push(year.concat('-', i.toString()));
+
+	if (year !== '') {
+		// getting list of all months in selected year to pass to map slider
+		datelist = [];
+		for (var i=1; i<=12; i++) {
+			if (i<10) {
+				datelist.push(year.concat('-0', i.toString()));
+			} else {
+				datelist.push(year.concat('-', i.toString()));
+			}
 		}
+		// adding new slider
+		timeslider = L.control.timelineSlider({
+										timelineItems: datelist,
+										changeMap: refreshData,
+										extraChangeMapParams: {data: locDate},
+										position: "bottomleft",
+										labelWidth: "55px"})
+								.addTo(myMap);
 	}
-	// adding new slider
-	timeslider = L.control.timelineSlider({
-									timelineItems: datelist,
-									changeMap: refreshData,
-									extraChangeMapParams: {data: locDate},
-									position: "bottomleft",
-									labelWidth: "55px"})
-							.addTo(myMap);
 });
 
 $('#highlight_hist').click(function () {
