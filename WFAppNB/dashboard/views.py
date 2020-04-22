@@ -156,6 +156,7 @@ def getGoogleTrends(request):
 # Could change the colours of the boxplot the same way
 # Add a loading bar that stops only once the csv is actually ready
 # Sometimes the server still gets out of sync
+# Put the box and whisker plot first??
 def write_hist_data(Data, highlight_year=None, HistDataLocations=None):
 	Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
 	if(type(HistDataLocations) != type(None)):
@@ -633,8 +634,8 @@ def getData(request):
  
 		# Add yearmonth column as the label of the box and whisker plot
 		# yearmonth = Data.SaleDate.dt.strftime('%Y/%m') # Can later add '%Y/%m/%d' to do daily boxes, or '%Y' for Yearly... 
-		yearmonth = Data.SaleDate.dt.strftime('%Y/%m/%d') 
-		# yearmonth = Data.SaleDate.dt.strftime('%Y') 
+		# yearmonth = Data.SaleDate.dt.strftime('%Y/%m/%d') 
+		yearmonth = Data.SaleDate.dt.strftime('%Y') 
 		# Add yearmonth as a column onto data
 		Data["YearMonth"] = yearmonth
 
@@ -667,21 +668,6 @@ def getData(request):
 # Update the histogram and highlight the specified year 
 def update_hist_data(request):
 
-	# # Move this function outside to be used here and in get_results
-	# def write_hist_data(Data, highlight_year=None, HistDataLocations=None):
-
-	# 	if(type(HistDataLocations) != type(None)):
-	# 		Data = Data[Data["Location"] == HistDataLocations]
-	# 	Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
-	# 	# Make a second csv with just a single years worth of data, to turn a different colour upon a change in the map slider
-	# 	if(type(highlight_year) != type(None)):
-	# 		single_year = Data[Data['SaleDate'].dt.year==highlight_year]
-	# 		single_year.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
-	# 	else: # If no year is supplied highlight all the data
-	# 		Data.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
-
-
-	# Figure out why there are those weird zero boxes like every second one when I call it from here.. 
 	if request.method == "GET":
 		highlight_year = request.GET['highlight_year']
 		HistDataLocations = request.GET['HistDataLocations']
