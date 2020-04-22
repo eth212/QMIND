@@ -576,10 +576,34 @@ $("#MapDataRankBy").change(function () {
 // Next up: call this function with a slider paramater binSize and a list of locations locList
 function makeHist(HistDataRankBy, HistDataBinSize){
   if(HistDataRankBy == "box"){
+
+    Plotly.d3.csv("{% static 'dashboard/csv/BoxData.csv' %}", function(err, rows){
+      Plotly.d3.csv("{% static 'dashboard/csv/BoxDataColumns.csv' %}", function(err, cols){
+    
+
+  function unpack(rows, key) {
+  return rows.map(function(row) { return row[key]; });
+  }
+  function unpack1(rows, key) {
+  return rows.map(function(row) { return [row[''],' ' + row[key]]; });
+  }
+
       function linspace(a,b,n) {
         return Plotly.d3.range(n).map(function(i){return a+i*(b-a)/(n-1);});
       }
-      var boxNumber = 30;
+      // Need to change boxNunber to be the number of columns in the csv
+      // var boxNumber = 30;
+      // var boxNumber = 230; // Number of year and month combinations
+      // var boxNumber = unpack(rows, '0').length;
+      var column_names = unpack(cols, 'yearmonths');
+      var column_n = unpack(cols, 'nyearmonths'); // Number of datapoints in each column
+      var boxNumber = column_n.length;
+      // $('#console').animate({opacity:0},function(){
+      // $(this).text(boxNumber)
+      // .animate({opacity:1});
+      // });
+      // console.log(column_n);
+      // var boxNumber = 23; // Number of years
       var boxColor = [];
       var allColors = linspace(0, 360, boxNumber);
       var data = [];
@@ -598,21 +622,31 @@ function makeHist(HistDataRankBy, HistDataBinSize){
 
       //Create Y Values
 
-      for( var i = 0; i < boxNumber;  i++ ){
-        var ySingleArray = [];
-          for( var j = 0; j < 10;  j++ ){
-            var randomNum = getRandomArbitrary(0, 1);
-            var yIndValue = 3.5*Math.sin(Math.PI * i/boxNumber) + i/boxNumber+(1.5+0.5*Math.cos(Math.PI*i/boxNumber))*randomNum;
-            ySingleArray.push(yIndValue);
-          }
-        yValues.push(ySingleArray);
-      }
+      // for( var i = 0; i < boxNumber;  i++ ){
+      //   var ySingleArray = [];
+      //     for( var j = 0; j < 10;  j++ ){
+      //       var randomNum = getRandomArbitrary(0, 1);
+      //       var yIndValue = 3.5*Math.sin(Math.PI * i/boxNumber) + i/boxNumber+(1.5+0.5*Math.cos(Math.PI*i/boxNumber))*randomNum;
+      //       ySingleArray.push(yIndValue);
+      //     }
+      //   yValues.push(ySingleArray);
+      // }
+
 
       //Create Traces
 
       for( var i = 0; i < boxNumber;  i++ ){
+        // console.log("i:")
+        // console.log(i)
+        // // console.log("yValues")
+        // console.log(yValues[i])
+        var yData = unpack(rows, String(i));
         var result = {
-          y: yValues[i],
+          // y: yValues[i],
+          y: yData,
+          name: String(column_names[i]).concat("                  n=", String(column_n[i])),
+          // name: String(column_n[i]),
+          // name: String(rows[i][0]), 
           type:'box',
           marker:{
             color: boxColor[i]
@@ -628,7 +662,7 @@ function makeHist(HistDataRankBy, HistDataBinSize){
           showgrid: false,
           zeroline: false,
           tickangle: 60,
-          showticklabels: false
+          // showticklabels: false
         },
         yaxis: {
           zeroline: false,
@@ -641,6 +675,9 @@ function makeHist(HistDataRankBy, HistDataBinSize){
 
       Plotly.purge(myDiv_hist);
       Plotly.newPlot('myDiv_hist', data, layout);
+
+      });
+  });
 
   } else {
 
@@ -782,63 +819,85 @@ function makeHist(HistDataRankBy, HistDataBinSize){
 // });
 
 
-// $("#HistDataBinSize").change(function () {
+function update_csvs(){
+  var HistDataLocations = $('#HistDataLocations').val();
+  var HistDataHighlightYear = $('#HistDataHighlightYear').val();
+  var HistDataBinSize = $('#HistDataBinSize').val();
+  $('#console').animate({opacity:0},function(){
+  $(this).text("Please pause while csv updates")
+  .animate({opacity:1});
+  });
+      $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations': HistDataLocations, 'HistDataBinSize': HistDataBinSize}, function(data) {
+    });
+      $('#console').animate({opacity:0},function(){
+  $(this).text("Might take a minute for the csv to load")
+  .animate({opacity:1});
+  });
+};
+
+// Call the update_hist_data fcn to 
+$("#HistDataBinSize").change(function () {
+  update_csvs();
 // var HistDataBinSize = $('#HistDataBinSize').val();
 // var HistDataRankBy = $('#HistDataRankBy').val();
-// 	$('#console').animate({opacity:0},function(){
-// 	$(this).text("Updating Hist Data")
-// 	.animate({opacity:1});
-// 	});
+//  $('#console').animate({opacity:0},function(){
+//  $(this).text("Updating Hist Data")
+//  .animate({opacity:1});
+//  });
 
 // makeHist(HistDataRankBy, HistDataBinSize);
 
-// });
+});
 
 // Update hist data to highlight a specific year and filter by location by changing the csv file 
 $("#HistDataHighlightYear").change(function () {
+  update_csvs();
+    // // var HistDataBinSize = $('#HistDataBinSize').val();
+    // // var HistDataRankBy = $('#HistDataRankBy').val();
+    // var HistDataLocations = $('#HistDataLocations').val();
+    // var HistDataHighlightYear = $('#HistDataHighlightYear').val();
     // var HistDataBinSize = $('#HistDataBinSize').val();
-    // var HistDataRankBy = $('#HistDataRankBy').val();
-    var HistDataLocations = $('#HistDataLocations').val();
-    var HistDataHighlightYear = $('#HistDataHighlightYear').val();
-    $('#console').animate({opacity:0},function(){
-    $(this).text("Please pause while csv updates")
-    .animate({opacity:1});
-    });
-    $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations': HistDataLocations}, function() {
-        // $('#TableData').html(data['0']);
-        // $('#BasketData').html(data['1']);
-        // $('#hi').html(data['0']);
-
-    // function show_popup(){
-    //   $('#console').animate({opacity:0},function(){
-    //   $(this).text("Waiting for csv")
-    //   .animate({opacity:1});
+    // $('#console').animate({opacity:0},function(){
+    // $(this).text("Please pause while csv updates")
+    // .animate({opacity:1});
     // });
-    // };
-    // window.setTimeout( show_popup, 5000 );
-    });
+    // $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations': HistDataLocations, 'HistDataBinSize': HistDataBinSize}, function() {
+    //     // $('#TableData').html(data['0']);
+    //     // $('#BasketData').html(data['1']);
+    //     // $('#hi').html(data['0']);
 
-    // makeHist(HistDataRankBy, HistDataBinSize);
-    $('#console').animate({opacity:0},function(){
-    $(this).text("Done")
-    .animate({opacity:1});
-    });
+    // // function show_popup(){
+    // //   $('#console').animate({opacity:0},function(){
+    // //   $(this).text("Waiting for csv")
+    // //   .animate({opacity:1});
+    // // });
+    // // };
+    // // window.setTimeout( show_popup, 5000 );
+    // });
+
+    // // makeHist(HistDataRankBy, HistDataBinSize);
+    // $('#console').animate({opacity:0},function(){
+    // $(this).text("Done")
+    // .animate({opacity:1});
+    // });
 });
 
 // Update the csv files when HistDataLocations are changed
 $("#HistDataLocations").change(function () {
-    var HistDataLocations = $('#HistDataLocations').val();
-    var HistDataHighlightYear = $('#HistDataHighlightYear').val();
-    $('#console').animate({opacity:0},function(){
-    $(this).text("Please pause while csv updates")
-    .animate({opacity:1});
-    });
-        $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations': HistDataLocations}, function(data) {
-      });
-        $('#console').animate({opacity:0},function(){
-    $(this).text("Done")
-    .animate({opacity:1});
-    });
+  update_csvs();
+    // var HistDataLocations = $('#HistDataLocations').val();
+    // var HistDataHighlightYear = $('#HistDataHighlightYear').val();
+    // var HistDataBinSize = $('#HistDataBinSize').val();
+    // $('#console').animate({opacity:0},function(){
+    // $(this).text("Please pause while csv updates")
+    // .animate({opacity:1});
+    // });
+    //     $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations': HistDataLocations, 'HistDataBinSize': HistDataBinSize}, function(data) {
+    //   });
+    //     $('#console').animate({opacity:0},function(){
+    // $(this).text("Done")
+    // .animate({opacity:1});
+    // });
   });
 
 
@@ -1250,11 +1309,11 @@ thead {
 <div class="pull-right">
 <div class="btn-group">
 <select style="color: blue" id="HistDataBinSize" class="dropdown-select">
-<option value="1">Daily</option>
-<option value="7">Weekly</option>
-<option value="14">Two Weeks</option>
-<option value="28">One Month</option>
 <option value="365">Yearly</option>
+<option value="28">Monthly</option>
+<option value="7">Weekly</option>
+<option value="1">Daily</option>
+<!-- <option value="14">Two Weeks</option> -->
 </select>
 </div>
 </div>
@@ -1290,7 +1349,7 @@ thead {
 <div class="btn-group">
 <select style="color: blue" id="HistDataLocations" class="dropdown-select">
 <option value="None">All Locations</option>
-<option value="TEXAS">TEXAS</option>
+<option value="JUSTIN TX">JUSTIN TX</option>
 <option value="SOUTH SIOUX CITY NE">SOUTH SIOUX CITY NE</option>
 </select>
 </div>

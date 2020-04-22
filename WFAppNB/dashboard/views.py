@@ -150,6 +150,60 @@ def getGoogleTrends(request):
 
 	return render(request)
 
+
+# Helper function used in get_results, and hist_go
+# To Do:
+# Could change the colours of the boxplot the same way
+# Add a loading bar that stops only once the csv is actually ready
+# Sometimes the server still gets out of sync
+def write_hist_data(Data, highlight_year=None, HistDataLocations=None):
+	Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
+	if(type(HistDataLocations) != type(None)):
+		Data = Data[Data["Location"] == HistDataLocations]
+		Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
+	# Make a second csv with just a single years worth of data, to turn a different colour upon a change in the map slider
+	if(type(highlight_year) != type(None)):
+		single_year = Data[Data['SaleDate'].dt.year==highlight_year]
+		single_year.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
+	else: # If no year is supplied highlight all the data
+		Data.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
+
+	data = Data.drop(columns=["Location", "SaleDate", 'DutyType', 'Source', 'CreatedTime', 'ModifiedTime', 'AssetID',
+'SerialNumber', 'Year', 'Make', 'Model', 'AuctionCompany',
+'Mileage', 'Engine', 'HP', 'Suspension', 'Sleeper', 'Trans', 'Spd',
+'Axles', 'TransactionType', 'Notes'])
+	# print(data.columns)
+	# print(data.head())
+	unique_yearmonths = np.sort(data.YearMonth.unique())
+	n_unique_yearmonths = [] # Number of datapoints per box
+	
+	i = 0
+	df1 = data[data["YearMonth"] == unique_yearmonths[i]]
+	df1 = df1.reset_index(drop=True)
+	df1 = df1.drop(columns = ['YearMonth'])
+	n_unique_yearmonths.append(str(len(df1)))
+	for i in range(1, len(unique_yearmonths)):
+		df2 = data[data["YearMonth"] == unique_yearmonths[i]]
+		df2 = df2.reset_index(drop=True)
+		df2 = df2.drop(columns = ['YearMonth'])
+		n_unique_yearmonths.append(str(len(df2)))
+		df = [df1, df2]
+		df_final = pd.concat(df, axis = 1, ignore_index = True)
+		df1 = df_final
+	df_final.to_csv("dashboard/static/dashboard/csv/BoxData.csv", index=False)
+
+	# Try turning into df and then writing to file
+	# pd.DataFrame(np.array([np.append(["yearmonths"], unique_yearmonths), np.append(["n_yearmonths"], n_unique_yearmonths)], dtype = str).T).to_csv("dashboard/static/dashboard/csv/BoxDataColumns.csv")
+	# print(unique_yearmonths)
+	df_final_cols = pd.DataFrame(np.vstack([unique_yearmonths, n_unique_yearmonths]).T, columns = ["yearmonths", "nyearmonths"])
+	# print(df_final_cols.head())
+	df_final_cols.to_csv("dashboard/static/dashboard/csv/BoxDataColumns.csv")
+	
+	# pd.DataFrame(np.array([unique_yearmonths, unique_yearmonths], dtype = str).T, columns = ["yearmonths", "nyearmonths"]).to_csv("dashboard/static/dashboard/csv/BoxDataColumns.csv")
+
+	# np.savetxt("dashboard/static/dashboard/csv/BoxDataColumns.csv", np.array([np.append(["yearmonths"], unique_yearmonths), np.append(["n_yearmonths"], n_unique_yearmonths)], dtype = str).T, '%s', delimiter=",")
+
+
 # (MAIN FUNCTION) Get data from database, filter data, sort data by location, attach metrics to each location, format data to HTML table rows.
 def getData(request):
 
@@ -573,22 +627,26 @@ def getData(request):
 		# Added by Kyle
 		#print(sql)
 		Data = pd.read_sql(sql,cnxn)
-		Data.to_csv("dashboard/static/dashboard/csv/AllData.csv", columns=["SalesPrice", "SaleDate", "Location"])
-		#print(Data.head())
-		#print(Data.columns)
 		
-		def write_hist_data(Data, highlight_year=None):
-			Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice"])
-			# Make a second csv with just a single years worth of data, to turn a different colour upon a change in the map slider
-			if(type(highlight_year) != type(None)):
-				single_year = Data[Data['SaleDate'].dt.year==highlight_year]
-				single_year.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice"])
-			else: # If no year is supplied highlight all the data
-				Data.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice"])
+		# print(Data.head())
+		#print(Data.columns)
+ 
+		# Add yearmonth column as the label of the box and whisker plot
+		# yearmonth = Data.SaleDate.dt.strftime('%Y/%m') # Can later add '%Y/%m/%d' to do daily boxes, or '%Y' for Yearly... 
+		yearmonth = Data.SaleDate.dt.strftime('%Y/%m/%d') 
+		# yearmonth = Data.SaleDate.dt.strftime('%Y') 
+		# Add yearmonth as a column onto data
+		Data["YearMonth"] = yearmonth
 
+		# print(Data.head())
+
+		# Data.to_csv("dashboard/static/dashboard/csv/AllData.csv", columns=["SalesPrice", "SaleDate", "Location", "YearMonth"])
+		Data.to_csv("dashboard/static/dashboard/csv/AllData.csv")
+
+		# For each unique value in yearmonth, append all of the datapoints with that yearmonth as a column in a csv
+		
 		# write_hist_data(Data, 2012)
 		write_hist_data(Data)
-
 
 		# Generate an HTML string that says how many assets are included and filtered out
 		FilteredAssets = "<b>Based on " + str(DataRowsA) + " of " + str(DataRowsB) + " assets.</b><br><br>Unselecting 'Mileage/hours' may help to include more assets.<br> This is due to the fact that a large portion of the data does not contain valid mileage/hours data."
@@ -609,23 +667,27 @@ def getData(request):
 # Update the histogram and highlight the specified year 
 def update_hist_data(request):
 
-	# Move this function outside to be used here and in get_results
-	def write_hist_data(Data, highlight_year=None, HistDataLocations=None):
+	# # Move this function outside to be used here and in get_results
+	# def write_hist_data(Data, highlight_year=None, HistDataLocations=None):
 
-		if(type(HistDataLocations) != type(None)):
-			Data = Data[Data["Location"] == HistDataLocations]
-		Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice"])
-		# Make a second csv with just a single years worth of data, to turn a different colour upon a change in the map slider
-		if(type(highlight_year) != type(None)):
-			single_year = Data[Data['SaleDate'].dt.year==highlight_year]
-			single_year.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice"])
-		else: # If no year is supplied highlight all the data
-			Data.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice"])
+	# 	if(type(HistDataLocations) != type(None)):
+	# 		Data = Data[Data["Location"] == HistDataLocations]
+	# 	Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
+	# 	# Make a second csv with just a single years worth of data, to turn a different colour upon a change in the map slider
+	# 	if(type(highlight_year) != type(None)):
+	# 		single_year = Data[Data['SaleDate'].dt.year==highlight_year]
+	# 		single_year.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
+	# 	else: # If no year is supplied highlight all the data
+	# 		Data.to_csv("dashboard/static/dashboard/csv/HistData_single_year.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
 
+
+	# Figure out why there are those weird zero boxes like every second one when I call it from here.. 
 	if request.method == "GET":
 		highlight_year = request.GET['highlight_year']
 		HistDataLocations = request.GET['HistDataLocations']
+		bin_size = request.GET['HistDataBinSize']
 		data = pd.read_csv("dashboard/static/dashboard/csv/AllData.csv", parse_dates=["SaleDate"])
+		data = data.drop(columns=["Unnamed: 0"])
 		print(highlight_year)
 		if(highlight_year == "None"):
 			highlight_year = None
@@ -633,6 +695,21 @@ def update_hist_data(request):
 			highlight_year = int(highlight_year)
 		if(HistDataLocations == "None"):
 			HistDataLocations = None
+
+		strf = ''
+		if(bin_size == "1"):
+			strf = '%Y/%m/%d'
+		elif(bin_size == "7"):
+			strf = '%Y W%W'
+		elif(bin_size == "28"):
+			strf = '%Y/%m'
+		elif(bin_size == '365'):
+			strf = '%Y'
+
+		yearmonth = data.SaleDate.dt.strftime(strf) 
+		# Add yearmonth as a column onto data
+		data["YearMonth"] = yearmonth
+		# print(data.head())
 
 		write_hist_data(data, highlight_year, HistDataLocations)
 

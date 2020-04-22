@@ -296,9 +296,9 @@ fg1.data.to_csv("/Users/Kyle/Documents/Queens/QMIND/QMIND/WFAppNB/dashboard/stat
 SD = None #range(2014,2017) #[2017] #None #[2011]
 L = ["JUSTIN TX"] # None #["ORLANDO, FL"]
 SN = None
-Y = [2000]
-MA = None #["FREIGHTLINER"] #None #["FREIGHTLINER"]
-MO =  ["FLD13264T CLASSIC XL"] #["COLUMBIA CL120"] #["CLASSIC XL"] #None #None
+Y = None #[2000]
+MA = ["FREIGHTLINER"] #None #["FREIGHTLINER"]
+MO = ["C120 CENTURY CLASS"] #["FLD13264T CLASSIC XL"] #["COLUMBIA CL120"] #["CLASSIC XL"] #None #None
 
 # Plot the price of every item in the db
 fg1 = Filtered_graph(data,SaleDate_Year=SD,Location=L,SerialNumber=SN,Year=Y,Make=MA,Model=MO)
@@ -307,7 +307,32 @@ fg1.plot_hist(hist_type = "total", numBins = 100)
 
 fg1.plot_hist(hist_type = "average", numBins=100)
 
+data_copy = data.copy()
+# data = data_copy
+data["YearMonth"] = data_copy.SaleDate.dt.strftime('%Y/%m/%d')
+# data["YearMonth"] = data_copy.SaleDate.dt.strftime('%Y')
+data = data.drop(columns=["SerialNumber", "Year", "Make", "Model", "Location", "SaleDate"])
 
+unique_yearmonths = np.sort(data.YearMonth.unique())
+n_unique_yearmonths = np.zeros(len(unique_yearmonths))
+i = 0
+df1 = data[data["YearMonth"] == unique_yearmonths[i]]
+df1 = df1.reset_index(drop=True)
+df1 = df1.drop(columns = ['YearMonth'])
+n_unique_yearmonths[i] = len(df1)
+# df1.columns = df1.columns + str(i)
+for i in range(1, len(unique_yearmonths)):
+    df2 = data[data["YearMonth"] == unique_yearmonths[i]]
+    df2 = df2.reset_index(drop=True)
+    df2 = df2.drop(columns = ['YearMonth'])
+    n_unique_yearmonths[i] = len(df2)
+#     df2.columns = df2.columns + str(i)
+    df = [df1, df2]
+    df_final = pd.concat(df, axis = 1, ignore_index = True)
+    df1 = df_final
+
+df_final
+df_final.to_csv("../../WFAppNB/dashboard/static/dashboard/csv/test_box.csv", index=False)
 
 # To do:
 # - Histogram the data in many small bins... maybe like 100 per year
