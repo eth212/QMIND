@@ -10,51 +10,75 @@ from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 from pytrends.request import TrendReq
 import plotly as py
 from geopy import geocoders
-py.tools.set_credentials_file(username='jeremykulchyk', api_key='ZNb8x0IBYP7SCQFiaf9T')
+py.tools.set_credentials_file(
+	username='jeremykulchyk', api_key='ZNb8x0IBYP7SCQFiaf9T')
 pytrend = TrendReq(hl='en-US', tz=360)
 gn = geocoders.GeoNames(username='13jjrk')
 
 # Dict of months
-MList = {1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'}
+MList = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+		 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
 
 cnxn = pyodbc.connect('DRIVER=FreeTDS;SERVER=localhost;PORT=1433;DATABASE=QMIND;UID=sa;PWD=reallyStrongPwd123;TDS_Version=8.0;')
+# cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER=192.168.99.100;PORT=1433;UID=sa;PWD=Qmind2020!;TDS_Version=8.0;')
 
 # Load index.html on searching servername +'/dashboard/'
+
+
 def index(request):
-    return render(request, 'dashboard/index.html')
+	with open("dashboard/static/dashboard/us-states.json") as geoJSON:
+		us_states = json.load(geoJSON)
+
+	df = pd.read_csv("dashboard/static/dashboard/csv/All_Locations_LongLat.csv")
+	city_coords = {}
+	for i, city in enumerate(df['Location'].dropna()):
+		noComma = city.replace(',', '')
+		if noComma not in city_coords.keys():
+			city_coords[noComma] = [df['Latitude'][i], df['Longitude'][i]]
+	# city_coords = {'city': df['Location'].tolist(), 'lat': df['Latitude'].tolist(), 'long': df['Longitude'].tolist()}
+	return render(request, 'dashboard/index.html', context={'us_states': us_states, 'city_coords': json.dumps(city_coords)})
 
 # Update the Google Search trend data when the user clicks a related search term or custom searches their own
+
+
 def updateSearchTerm1(request):
 	if request.method == 'GET':
 		# Get search term
 		item1 = request.GET['NewSearchTerm']
 
 		# Static list of State codes to be added as column in PytrendsTerm1.csv. This is done so that plotly.js can find the states location on the map generated
-		Codes = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY']
+		Codes = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS',
+				 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']
 		# Setup Codes as pandas dataframe column
 		se = pd.Series(Codes)
 
 		# Build google search trends payload, and save interest_over_time dataframe to csv file
-		pytrend.build_payload(kw_list=[item1.lower()],geo='US',timeframe='today 12-m')
+		pytrend.build_payload(
+			kw_list=[item1.lower()], geo='US', timeframe='today 12-m')
 		interest_over_time_df = pytrend.interest_over_time()
-		interest_over_time_df.to_csv("dashboard/static/dashboard/csv/PytrendsTerm1Interest.csv")
+		interest_over_time_df.to_csv(
+			"dashboard/static/dashboard/csv/PytrendsTerm1Interest.csv")
 
 		# Get interest_by_region dataframe, remove District of Columbia since plotly.js's scattergeo plot doesn't use it
 		interest_by_region_df = pytrend.interest_by_region()
-		interest_by_region_df = interest_by_region_df[interest_by_region_df.index != "District of Columbia"]
+		interest_by_region_df = interest_by_region_df[interest_by_region_df.index !=
+													  "District of Columbia"]
 		# Add state codes as column in interest_by_region_df
 		interest_by_region_df['code'] = se.values
 		# Save df to csv
-		interest_by_region_df.to_csv("dashboard/static/dashboard/csv/PytrendsTerm1.csv")
+		interest_by_region_df.to_csv(
+			"dashboard/static/dashboard/csv/PytrendsTerm1.csv")
 		print(interest_by_region_df)
 
 		# Return search term to html file script titled: Search term 1 Custom Search, or Search term 1 Related Search
-		data_details = {'item1':item1.lower()}
+		data_details = {'item1': item1.lower()}
 		return JsonResponse(data_details)
 
 	return render(request)
 
 # Get Google Trend data and save to csv file to be used by plotly in the index.html file script titled: Search term 1 Custom Search, or Search term 1 Related Search, or Get Results
+
+
 def getGoogleTrends(request):
 	if request.method == 'GET':
 
@@ -67,20 +91,19 @@ def getGoogleTrends(request):
 
 		# Possible search queries, based on selector. Default selector as 1. Search queries start specific and get more general to ensure trend data is found
 		Selector = 1
-		SearchQueries = {1:['used '+ Make + ' ' + Dutytype,
-							  'used '+ Make + ' ' + Category,
-							  Make + ' ' + Dutytype + ' for sale',
-							  Make +' '+ Category,
-							  'used ' + Make,
-							  'used ' + Dutytype,
-							  'used ' + Category],
-						 2:['used '+ Dutytype,
-						 	  Dutytype + ' for sale',
-						 	  'used ' + Category,
-						 	  Category + ' for sale'],
-						 3:['used ' + Category,
-						 	  Category + ' for sale']}
-
+		SearchQueries = {1: ['used ' + Make + ' ' + Dutytype,
+							 'used ' + Make + ' ' + Category,
+							 Make + ' ' + Dutytype + ' for sale',
+							 Make + ' ' + Category,
+							 'used ' + Make,
+							 'used ' + Dutytype,
+							 'used ' + Category],
+						 2: ['used ' + Dutytype,
+							 Dutytype + ' for sale',
+							 'used ' + Category,
+							 Category + ' for sale'],
+						 3: ['used ' + Category,
+							 Category + ' for sale']}
 
 		# Choose selector based on what data the user has selected from the Data Entry dropdown lists
 		if Category != "" and Dutytype != "" and Make != "":
@@ -99,7 +122,8 @@ def getGoogleTrends(request):
 		# Only care about interest_by_region to find available data; if there is interest_by_region data available, there will always
 		# 	be interest_over_time data available, but not vice versa
 		for SI in SearchQueries[Selector]:
-			pytrend.build_payload(kw_list=[SI.lower()],geo='US',timeframe='today 12-m')
+			pytrend.build_payload(
+				kw_list=[SI.lower()], geo='US', timeframe='today 12-m')
 			interest_by_region_df = pytrend.interest_by_region()
 			print(interest_by_region_df)
 			flag = False
@@ -115,19 +139,23 @@ def getGoogleTrends(request):
 		interest_over_time_df = pytrend.interest_over_time()
 
 		# Static list of State codes to be added as column in PytrendsTerm1.csv. This is done so that plotly.js can find the states location on the map generated
-		Codes = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY']
+		Codes = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS',
+				 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']
 		# Setup Codes as pandas dataframe column
 		se = pd.Series(Codes)
 
 		# Save interest_over_time dataframe to csv file
-		interest_over_time_df.to_csv("dashboard/static/dashboard/csv/PytrendsTerm1Interest.csv")
+		interest_over_time_df.to_csv(
+			"dashboard/static/dashboard/csv/PytrendsTerm1Interest.csv")
 
 		# Get interest_by_region dataframe, remove District of Columbia since plotly.js's scattergeo plot doesn't use it
-		interest_by_region_df = interest_by_region_df[interest_by_region_df.index != "District of Columbia"]
+		interest_by_region_df = interest_by_region_df[interest_by_region_df.index !=
+													  "District of Columbia"]
 		# Add state codes as column in interest_by_region_df
 		interest_by_region_df['code'] = se.values
 		# Save df to csv
-		interest_by_region_df.to_csv("dashboard/static/dashboard/csv/PytrendsTerm1.csv")
+		interest_by_region_df.to_csv(
+			"dashboard/static/dashboard/csv/PytrendsTerm1.csv")
 
 		# Get related queries and store in dictionary
 		related_queries_dict = pytrend.related_queries()
@@ -138,14 +166,15 @@ def getGoogleTrends(request):
 			for keys in related_queries_dict:
 				ListData1 = ListData1 + "<h4>Top Related Searches</h4><br>"
 				for items in related_queries_dict[keys]['top']['query']:
-					ButtonItem = '<button type="button" class="btn btn-link" id="ChangeSearchTerm1">%s</button>' %(items)
+					ButtonItem = '<button type="button" class="btn btn-link" id="ChangeSearchTerm1">%s</button>' % (
+						items)
 					ListData1 = ListData1 + ButtonItem
 		except:
 			# If problems arise, don't show related queries
 			ListData1 = ""
 
 		# return search keyword as 'item1' and related search queries as myDiv13, which is the id of the div in index.html that will display the related searches
-		data_details = {'item1':item1.lower(),'myDiv13':ListData1}
+		data_details = {'item1': item1.lower(), 'myDiv13': ListData1}
 		return JsonResponse(data_details)
 
 	return render(request)
@@ -177,7 +206,7 @@ def write_hist_data(Data, highlight_year=None, HistDataLocations=None):
 	# print(data.head())
 	unique_yearmonths = np.sort(data.YearMonth.unique())
 	n_unique_yearmonths = [] # Number of datapoints per box
-	
+
 	i = 0
 	df1 = data[data["YearMonth"] == unique_yearmonths[i]]
 	df1 = df1.reset_index(drop=True)
@@ -199,18 +228,21 @@ def write_hist_data(Data, highlight_year=None, HistDataLocations=None):
 	df_final_cols = pd.DataFrame(np.vstack([unique_yearmonths, n_unique_yearmonths]).T, columns = ["yearmonths", "nyearmonths"])
 	# print(df_final_cols.head())
 	df_final_cols.to_csv("dashboard/static/dashboard/csv/BoxDataColumns.csv")
-	
+
 	# pd.DataFrame(np.array([unique_yearmonths, unique_yearmonths], dtype = str).T, columns = ["yearmonths", "nyearmonths"]).to_csv("dashboard/static/dashboard/csv/BoxDataColumns.csv")
 
 	# np.savetxt("dashboard/static/dashboard/csv/BoxDataColumns.csv", np.array([np.append(["yearmonths"], unique_yearmonths), np.append(["n_yearmonths"], n_unique_yearmonths)], dtype = str).T, '%s', delimiter=",")
 
 
 # (MAIN FUNCTION) Get data from database, filter data, sort data by location, attach metrics to each location, format data to HTML table rows.
+
+
 def getData(request):
 
 	# Rank Function for sorting dictionary by avgprice, totalrev,.. etc.
-	def RankMap(dictt,string,Reverse):
-		Ranked = sorted(dictt.items(),key=lambda x: x[1][string],reverse=Reverse)
+	def RankMap(dictt, string, Reverse):
+		Ranked = sorted(
+			dictt.items(), key=lambda x: x[1][string], reverse=Reverse)
 		print(Ranked)
 		return Ranked
 
@@ -241,7 +273,7 @@ def getData(request):
 
 		# If the user only selects data from the Category, and dutytype dropdown lists, return a Too General message since too much data will be retrieved from database, possibly causing crash.
 		if Make == "" and Model == "" and Year == "" and YearRangeEnd == "":
-			data_details = {'Error' :'TooGeneral'}
+			data_details = {'Error': 'TooGeneral'}
 			return JsonResponse(data_details)
 
 		# Setup SQL database connection, which is powered by pydobc.
@@ -628,14 +660,14 @@ def getData(request):
 		# Added by Kyle
 		#print(sql)
 		Data = pd.read_sql(sql,cnxn)
-		
+
 		# print(Data.head())
 		#print(Data.columns)
- 
+
 		# Add yearmonth column as the label of the box and whisker plot
-		# yearmonth = Data.SaleDate.dt.strftime('%Y/%m') # Can later add '%Y/%m/%d' to do daily boxes, or '%Y' for Yearly... 
-		# yearmonth = Data.SaleDate.dt.strftime('%Y/%m/%d') 
-		yearmonth = Data.SaleDate.dt.strftime('%Y') 
+		# yearmonth = Data.SaleDate.dt.strftime('%Y/%m') # Can later add '%Y/%m/%d' to do daily boxes, or '%Y' for Yearly...
+		# yearmonth = Data.SaleDate.dt.strftime('%Y/%m/%d')
+		yearmonth = Data.SaleDate.dt.strftime('%Y')
 		# Add yearmonth as a column onto data
 		Data["YearMonth"] = yearmonth
 
@@ -645,7 +677,7 @@ def getData(request):
 		Data.to_csv("dashboard/static/dashboard/csv/AllData.csv")
 
 		# For each unique value in yearmonth, append all of the datapoints with that yearmonth as a column in a csv
-		
+
 		# write_hist_data(Data, 2012)
 		write_hist_data(Data)
 
@@ -665,7 +697,7 @@ def getData(request):
 	return render(request)
 
 
-# Update the histogram and highlight the specified year 
+# Update the histogram and highlight the specified year
 def update_hist_data(request):
 
 	if request.method == "GET":
@@ -692,7 +724,7 @@ def update_hist_data(request):
 		elif(bin_size == '365'):
 			strf = '%Y'
 
-		yearmonth = data.SaleDate.dt.strftime(strf) 
+		yearmonth = data.SaleDate.dt.strftime(strf)
 		# Add yearmonth as a column onto data
 		data["YearMonth"] = yearmonth
 		# print(data.head())
@@ -741,8 +773,9 @@ def update_hist_data(request):
 def updatetabledata(request):
 
 	# Rank Function for ordering the locations, stored in RankedLocs, by the selected TableDataRankBy value
-	def RankMap(dictt,string,Reverse):
-		Ranked = sorted(dictt.items(),key=lambda x: x[1][string],reverse=Reverse)
+	def RankMap(dictt, string, Reverse):
+		Ranked = sorted(
+			dictt.items(), key=lambda x: x[1][string], reverse=Reverse)
 		print(Ranked)
 		return Ranked
 
@@ -756,7 +789,7 @@ def updatetabledata(request):
 		text_file.close()
 
 		# Update RankedLocs list to be ranked by selected TableDataRankBy value
-		RankedLocs = RankMap(Locs,TableDataRankBy,True)
+		RankedLocs = RankMap(Locs, TableDataRankBy, True)
 
 		# Have to compute the Avg Location data again in order to compute percentages
 		# This process is exactly the same as the process outlined in the getData function above.
@@ -773,7 +806,8 @@ def updatetabledata(request):
 		mileagecount = 0
 
 		# Loop through all locations
-		LocsAvg = {"AvgTotalRev":0, "AvgAvgPrice":0,"AvgAvgMil":0,"AvgAvgAge":0,"AvgHighSale":0,"AvgLowSale":0,"AvgSoldAssets":0}
+		LocsAvg = {"AvgTotalRev": 0, "AvgAvgPrice": 0, "AvgAvgMil": 0,
+				   "AvgAvgAge": 0, "AvgHighSale": 0, "AvgLowSale": 0, "AvgSoldAssets": 0}
 		for locs in Locs:
 			TotalTotalRev = TotalTotalRev + Locs[locs]['TotalRev']
 			TotalAvgPrice = TotalAvgPrice + Locs[locs]['AvgPrice']
@@ -782,13 +816,14 @@ def updatetabledata(request):
 			TotalHighSale = TotalHighSale + Locs[locs]['HighSale']
 			TotalLowSale = TotalLowSale + Locs[locs]['LowSale']
 			TotalSoldAssets = TotalSoldAssets + Locs[locs]['SoldAssets']
-			count +=  1
-			if Locs[locs]['AvgMil'] > 0: # Increment mileagecount for valid mileage values
+			count += 1
+			if Locs[locs]['AvgMil'] > 0:  # Increment mileagecount for valid mileage values
 				mileagecount += 1
 		LocsAvg['TotalRev'] = TotalTotalRev/count
 		LocsAvg['AvgPrice'] = TotalAvgPrice/count
 		try:
-			LocsAvg['AvgMil'] = TotalAvgMil/mileagecount # Try computing the average if the mileagecount is a valid value.
+			# Try computing the average if the mileagecount is a valid value.
+			LocsAvg['AvgMil'] = TotalAvgMil/mileagecount
 		except:
 			LocsAvg['AvgMil'] = 0
 		LocsAvg['AvgAge'] = TotalAvgAge/count
@@ -803,7 +838,8 @@ def updatetabledata(request):
 			count += 1
 			strdict = {}
 			print(keys[1])
-			itemlist = ["TotalRev", "AvgPrice", "AvgMil", "AvgAge", "HighSale", "LowSale", "SoldAssets"]
+			itemlist = ["TotalRev", "AvgPrice", "AvgMil",
+						"AvgAge", "HighSale", "LowSale", "SoldAssets"]
 			for items in keys[1]:
 				if items not in itemlist:
 					continue
@@ -820,23 +856,29 @@ def updatetabledata(request):
 				MonthName = MList[keys[1]['HighSaleMonth']]
 				if pct < 1:
 					if items == 'HighSale':
-						str1 = '<td>%s, %s<br><p style="color:red">-%s &#37</p></td>' % (keys[1][items],MonthName, round(100*(1-pct),2))
+						str1 = '<td>%s, %s<br><p style="color:red">-%s &#37</p></td>' % (
+							keys[1][items], MonthName, round(100*(1-pct), 2))
 					else:
-						str1 = '<td>%s<br> <p style="color:red">-%s &#37</p></td>' % (keys[1][items], round(100*(1-pct),2))
+						str1 = '<td>%s<br> <p style="color:red">-%s &#37</p></td>' % (
+							keys[1][items], round(100*(1-pct), 2))
 				else:
 					if items == 'HighSale':
-						str1 = '<td>%s, %s<br> <p style="color:green">+%s &#37</p></td>' % (keys[1][items],MonthName, round(100*(pct-1),2))
+						str1 = '<td>%s, %s<br> <p style="color:green">+%s &#37</p></td>' % (
+							keys[1][items], MonthName, round(100*(pct-1), 2))
 					else:
-						str1 = '<td>%s<br> <p style="color:green">+%s &#37</p></td>' % (keys[1][items], round(100*(pct-1),2))
+						str1 = '<td>%s<br> <p style="color:green">+%s &#37</p></td>' % (
+							keys[1][items], round(100*(pct-1), 2))
 				strdict[items] = str1
 			if count == 1:
-				tablerow = '<tr class="clickable-row active"><th scope="row">%s</th><td>%s</td>%s%s%s%s%s%s%s</tr>' % (count,RankedLocs[count-1][0],strdict['TotalRev'], strdict['AvgPrice'],strdict['AvgMil'],strdict['AvgAge'],strdict['HighSale'],strdict['LowSale'],strdict['SoldAssets'])
+				tablerow = '<tr class="clickable-row active"><th scope="row">%s</th><td>%s</td>%s%s%s%s%s%s%s</tr>' % (
+					count, RankedLocs[count-1][0], strdict['TotalRev'], strdict['AvgPrice'], strdict['AvgMil'], strdict['AvgAge'], strdict['HighSale'], strdict['LowSale'], strdict['SoldAssets'])
 			else:
-				tablerow = '<tr class="clickable-row"><th scope="row">%s</th><td>%s</td>%s%s%s%s%s%s%s</tr>' % (count,RankedLocs[count-1][0],strdict['TotalRev'], strdict['AvgPrice'],strdict['AvgMil'],strdict['AvgAge'],strdict['HighSale'],strdict['LowSale'],strdict['SoldAssets'])
+				tablerow = '<tr class="clickable-row"><th scope="row">%s</th><td>%s</td>%s%s%s%s%s%s%s</tr>' % (
+					count, RankedLocs[count-1][0], strdict['TotalRev'], strdict['AvgPrice'], strdict['AvgMil'], strdict['AvgAge'], strdict['HighSale'], strdict['LowSale'], strdict['SoldAssets'])
 			TableData = TableData + tablerow
 
 		# JSON Data dump
-		data_details = {'0':TableData}
+		data_details = {'0': TableData}
 
 		# Write updated RankedLocs list to RankedLocs.txt
 		text_file = open("dashboard/static/dashboard/csv/RankedLocs.txt", "w")
@@ -848,6 +890,8 @@ def updatetabledata(request):
 	return render(request)
 
 # Load categories into category dropdown list upon page loading
+
+
 def populatedropdowns(request):
 	if request.method == 'GET':
 		"""
@@ -864,12 +908,12 @@ def populatedropdowns(request):
 		# Add all category display names to an HTML style string for a dropdown list of items
 		DropDownListCat = "<option value="">Select Category</option>"
 		for item in dfDuty: # Don't include any EMG categories, or Aircrafts
-			if "EMG" in str(item):
-				continue
-			if "Air" in str(item):
-				continue
-			DropDownItem = '<option value="%s">%s</option>' % (item, item)
-			DropDownListCat = DropDownListCat + DropDownItem
+				if "EMG" in str(item):
+						continue
+				if "Air" in str(item):
+						continue
+				DropDownItem = '<option value="%s">%s</option>' % (item, item)
+				DropDownListCat = DropDownListCat + DropDownItem
 
 		"""
 
@@ -877,14 +921,16 @@ def populatedropdowns(request):
 		DropDownListCat = "<option value="">Select Category</option>"
 		DropDownItem = '<option value="Tractors">Tractors</option>'
 		DropDownListCat = DropDownListCat + DropDownItem
-		# ADDED FOR QMNID TEAM
+		# ADDED FOR QMIND TEAM
 
-		data_details = {'0':DropDownListCat}
+		data_details = {'0': DropDownListCat}
 
 		return JsonResponse(data_details)
 	return render(request)
 
 # Load dropdown list of dutytypes upon selecting a category
+
+
 def populatedropdownsCat(request):
 	if request.method == 'GET':
 
@@ -927,25 +973,24 @@ def populatedropdownsCat(request):
 		# Kyle Change
 		# sql = "SELECT * FROM QMIND.dbo.Tractors"
 		sql = "SELECT DutyType FROM QMIND.dbo.Tractors"
-		Data1 = pd.read_sql(sql,cnxn)
+		Data1 = pd.read_sql(sql, cnxn)
 		print(list(set(Data1.DutyType.values)))
-
 
 		DropDownListDuty = "<option value="">Select Dutytype</option>"
 		for item in list(set(Data1.DutyType.values)):
 			DropDownItem = '<option value="%s">%s</option>' % (item, item)
 			DropDownListDuty = DropDownListDuty + DropDownItem
 
-
-		data_details = {'0':DropDownListDuty}
+		data_details = {'0': DropDownListDuty}
 
 		return JsonResponse(data_details)
 	return render(request)
 
 # Load dropdown list of all makes, models, and years upon selecting a dutytype
+
+
 def populatedropdownsDuty(request):
 	if request.method == 'GET':
-
 
 		# Get selected category and dutytype
 		Dutytype = request.GET['Dutytype']
@@ -966,10 +1011,11 @@ def populatedropdownsDuty(request):
 
 		# Kyle change
 		# sql = "SELECT * FROM QMIND.dbo.[%s] where DUTYTYPE = '%s'" %(Category, Dutytype)
-		sql = "SELECT Make, Model, Year, DutyType FROM QMIND.dbo.[%s] where DUTYTYPE = '%s'" %(Category, Dutytype)
+		sql = "SELECT Make, Model, Year, DutyType FROM QMIND.dbo.[%s] where DUTYTYPE = '%s'" % (
+			Category, Dutytype)
 
 		print(sql)
-		Data = pd.read_sql(sql,cnxn)
+		Data = pd.read_sql(sql, cnxn)
 
 		# Count total number of each unique Make, Model, and Year, that appear in the data. These values are attached in the respective dropdown list values to show number of data rows for each selectable value
 		dfMakecount = Data.groupby('Make').count()['DutyType']
@@ -977,11 +1023,14 @@ def populatedropdownsDuty(request):
 		dfYearcount = Data.groupby('Year').count()['DutyType']
 
 		# Get sorted lists of unique Makes, Models, and years, respectively.
-		dfMake = Data[['Make']].drop_duplicates('Make').sort_values('Make')['Make']
+		dfMake = Data[['Make']].drop_duplicates(
+			'Make').sort_values('Make')['Make']
 		print(dfMake)
-		dfModel = Data[['Model']].drop_duplicates('Model').sort_values('Model')['Model']
+		dfModel = Data[['Model']].drop_duplicates(
+			'Model').sort_values('Model')['Model']
 		print(dfModel)
-		dfYear = Data[['Year']].drop_duplicates('Year').sort_values('Year')['Year']
+		dfYear = Data[['Year']].drop_duplicates(
+			'Year').sort_values('Year')['Year']
 		print(dfYear)
 
 		# Populate Make HTML dropdown string
@@ -989,7 +1038,8 @@ def populatedropdownsDuty(request):
 		for item in dfMake:
 			if item is None:
 				continue
-			DropDownItem = '<option value="%s">%s (%s)</option>' % (item, item, dfMakecount[item])
+			DropDownItem = '<option value="%s">%s (%s)</option>' % (
+				item, item, dfMakecount[item])
 			DropDownListMake = DropDownListMake + DropDownItem
 
 		# Populate Model HTML dropdown string
@@ -997,23 +1047,28 @@ def populatedropdownsDuty(request):
 		for item in dfModel:
 			if item is None:
 				continue
-			DropDownItem = '<option value="%s">%s (%s)</option>' % (item, item, dfModelcount[item])
+			DropDownItem = '<option value="%s">%s (%s)</option>' % (
+				item, item, dfModelcount[item])
 			DropDownListModel = DropDownListModel + DropDownItem
 
-        # Populate Year HTML dropdown string
+		# Populate Year HTML dropdown string
 		DropDownListYear = "<option value="">Select Year</option>"
 		for item in dfYear:
 			if item is None:
 				continue
-			DropDownItem = '<option value="%s">%s (%s)</option>' % (item, item, dfYearcount[item])
+			DropDownItem = '<option value="%s">%s (%s)</option>' % (
+				item, item, dfYearcount[item])
 			DropDownListYear = DropDownListYear + DropDownItem
 
-		data_details = {'0' : DropDownListMake,'1':DropDownListModel, '2' : DropDownListYear}
+		data_details = {'0': DropDownListMake,
+						'1': DropDownListModel, '2': DropDownListYear}
 
 		return JsonResponse(data_details)
 	return render(request)
 
 # Load dropdown list of all models and years upon selecting a make
+
+
 def populatedropdownsMake(request):
 	if request.method == 'GET':
 
@@ -1032,18 +1087,21 @@ def populatedropdownsMake(request):
 		Category = df['DutyTypeDesc'].iloc[0]
 		"""
 		# Get all data under specified dutytype and category
-		sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MAKE = '%s'" %(Category, Dutytype, Make)
+		sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MAKE = '%s'" % (
+			Category, Dutytype, Make)
 		print(sql)
-		Data = pd.read_sql(sql,cnxn)
+		Data = pd.read_sql(sql, cnxn)
 
 		# Count total number of each unique Model and Year, that appear in the data
 		dfModelcount = Data.groupby('Model').count()['DutyType']
 		dfYearcount = Data.groupby('Year').count()['DutyType']
 
 		# Get sorted lists of unique models, and years, respectively.
-		dfModel = Data[['Model']].drop_duplicates('Model').sort_values('Model')['Model']
+		dfModel = Data[['Model']].drop_duplicates(
+			'Model').sort_values('Model')['Model']
 		print(dfModel)
-		dfYear = Data[['Year']].drop_duplicates('Year').sort_values('Year')['Year']
+		dfYear = Data[['Year']].drop_duplicates(
+			'Year').sort_values('Year')['Year']
 		print(dfYear)
 
 		# Populate Model HTML dropdown string
@@ -1051,23 +1109,27 @@ def populatedropdownsMake(request):
 		for item in dfModel:
 			if item is None:
 				continue
-			DropDownItem = '<option value="%s">%s (%s)</option>' % (item, item, dfModelcount[item])
+			DropDownItem = '<option value="%s">%s (%s)</option>' % (
+				item, item, dfModelcount[item])
 			DropDownListModel = DropDownListModel + DropDownItem
 
-        # Populate Year HTML dropdown string
+		# Populate Year HTML dropdown string
 		DropDownListYear = "<option value="">Select Year</option>"
 		for item in dfYear:
 			if item is None:
 				continue
-			DropDownItem = '<option value="%s">%s (%s)</option>' % (item, item, dfYearcount[item])
+			DropDownItem = '<option value="%s">%s (%s)</option>' % (
+				item, item, dfYearcount[item])
 			DropDownListYear = DropDownListYear + DropDownItem
 
-		data_details = {'0':DropDownListModel, '1' : DropDownListYear}
+		data_details = {'0': DropDownListModel, '1': DropDownListYear}
 
 		return JsonResponse(data_details)
 	return render(request)
 
 # Load dropdown list of all years upon selecting a model
+
+
 def populatedropdownsModel(request):
 	if request.method == 'GET':
 
@@ -1089,28 +1151,34 @@ def populatedropdownsModel(request):
 
 		# Handle user selection possibilities to create the proper SQL query
 		if Make == '' and Dutytype == '':
-			sql = "SELECT * FROM QMIND.dbo.%s where MODEL = '%s'" %(Category, Model)
+			sql = "SELECT * FROM QMIND.dbo.%s where MODEL = '%s'" % (
+				Category, Model)
 		if Make == '' and Dutytype != '':
-			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s'" %(Category, Dutytype, Model)
+			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s'" % (
+				Category, Dutytype, Model)
 		if Make != '' and Dutytype == '':
-			sql = "SELECT * FROM QMIND.dbo.%s where MAKE = '%s' and MODEL = '%s'" %(Category, Make, Model)
+			sql = "SELECT * FROM QMIND.dbo.%s where MAKE = '%s' and MODEL = '%s'" % (
+				Category, Make, Model)
 		if Make != '' and Dutytype != '':
-			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s' and MAKE = '%s'" %(Category, Dutytype, Model, Make)
+			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s' and MAKE = '%s'" % (
+				Category, Dutytype, Model, Make)
 		print(sql)
-		Data = pd.read_sql(sql,cnxn)
+		Data = pd.read_sql(sql, cnxn)
 
 		# Count total number of each unique Year that appear in the data
 		dfYearcount = Data.groupby('Year').count()['DutyType']
 
 		# Get sorted lists of unique models, and years, respectively.
-		dfYear = Data[['Year']].drop_duplicates('Year').sort_values('Year')['Year']
+		dfYear = Data[['Year']].drop_duplicates(
+			'Year').sort_values('Year')['Year']
 
-        # Populate Year HTML dropdown string
+		# Populate Year HTML dropdown string
 		DropDownListYear = "<option value="">Select Year</option>"
 		for item in dfYear:
 			if item is None:
 				continue
-			DropDownItem = '<option value="%s">%s (%s)</option>' % (item, item, dfYearcount[item])
+			DropDownItem = '<option value="%s">%s (%s)</option>' % (
+				item, item, dfYearcount[item])
 			DropDownListYear = DropDownListYear + DropDownItem
 
 		data_details = {'0': DropDownListYear}
@@ -1141,28 +1209,34 @@ def populate_dropdowns_location(request):
 
 		# Handle user selection possibilities to create the proper SQL query
 		if Make == '' and Dutytype == '':
-			sql = "SELECT * FROM QMIND.dbo.%s where MODEL = '%s'" %(Category, Model)
+			sql = "SELECT * FROM QMIND.dbo.%s where MODEL = '%s'" % (
+				Category, Model)
 		if Make == '' and Dutytype != '':
-			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s'" %(Category, Dutytype, Model)
+			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s'" % (
+				Category, Dutytype, Model)
 		if Make != '' and Dutytype == '':
-			sql = "SELECT * FROM QMIND.dbo.%s where MAKE = '%s' and MODEL = '%s'" %(Category, Make, Model)
+			sql = "SELECT * FROM QMIND.dbo.%s where MAKE = '%s' and MODEL = '%s'" % (
+				Category, Make, Model)
 		if Make != '' and Dutytype != '':
-			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s' and MAKE = '%s'" %(Category, Dutytype, Model, Make)
+			sql = "SELECT * FROM QMIND.dbo.%s where DUTYTYPE = '%s' and MODEL = '%s' and MAKE = '%s'" % (
+				Category, Dutytype, Model, Make)
 		print(sql)
-		Data = pd.read_sql(sql,cnxn)
+		Data = pd.read_sql(sql, cnxn)
 
 		# Count total number of each unique Year that appear in the data
 		dfYearcount = Data.groupby('Year').count()['DutyType']
 
 		# Get sorted lists of unique models, and years, respectively.
-		dfYear = Data[['Year']].drop_duplicates('Year').sort_values('Year')['Year']
+		dfYear = Data[['Year']].drop_duplicates(
+			'Year').sort_values('Year')['Year']
 
-        # Populate Year HTML dropdown string
+		# Populate Year HTML dropdown string
 		DropDownListYear = "<option value="">Select Year</option>"
 		for item in dfYear:
 			if item is None:
 				continue
-			DropDownItem = '<option value="%s">%s (%s)</option>' % (item, item, dfYearcount[item])
+			DropDownItem = '<option value="%s">%s (%s)</option>' % (
+				item, item, dfYearcount[item])
 			DropDownListYear = DropDownListYear + DropDownItem
 
 		data_details = {'0': DropDownListYear}
@@ -1170,3 +1244,41 @@ def populate_dropdowns_location(request):
 		return JsonResponse(data_details)
 	return render(request)
 
+# get data needed for leaflet map slider,
+
+
+def getSliderData(request):
+	if request.method == 'GET':
+		df = pd.read_csv('dashboard/static/dashboard/csv/AllData.csv')
+		datesStr = df['SaleDate'].astype(str)
+		yearsStr = datesStr.str.slice(0, 4).tolist()
+		years = sorted(list(set(yearsStr)))
+
+		DropDownListYear = "<option value="">Select Year</option>"
+		for item in years:
+			if item is None:
+				continue
+			DropDownItem = '<option value="%s">%s</option>' % (item, item)
+			DropDownListYear = DropDownListYear + DropDownItem
+
+		json = {'location': df['Location'].tolist(), 'saledate': df['SaleDate'].tolist(),
+				'years': years, 'years_html': DropDownListYear}
+		return JsonResponse(json)
+	return render(request)
+
+
+# def populatedropdownsMapYear(request):
+#     if request.method == 'GET':
+#         df = pd.read_csv('dashboard/static/dashboard/csv/AllData.csv')
+#         years = sorted(
+#             list(set(df['SaleDate'].astype(str).slice(0, 4).tolist())))
+#
+#         DropDownListYear = "<option value="">Select Year</option>"
+#         for item in years:
+#             if item is None:
+#                 continue
+#             DropDownItem = '<option value="%s">%s</option>' % (item, item)
+#             DropDownListYear = DropDownListYear + DropDownItem
+#         json = {'html': DropDownListYear}
+#         return JsonResponse(json)
+#     return render(request)

@@ -21,6 +21,111 @@
 <script src="https://cdn.rawgit.com/Gmousse/dataframe-js/master/dist/dataframe-min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 
+<!-- leaflet map imports -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+<script src="{% static "dashboard/leaflet-timeline-slider.js" %}"></script>
+<script src="{% static "dashboard/PruneCluster.js" %}"></script>
+
+<!-- leaflet map functions, actual map/function use is at bottom of file -->
+<script type="text/javascript">
+
+function style(feature) {
+		return {
+				weight: 2,
+				opacity: 0,
+				fillOpacity: 0
+		};
+}
+
+function mouseoverHighlight(e) {
+ var layer = e.target;
+
+ if (layer.options.color !== '#FFD700') {
+	 layer.setStyle({
+			 weight: 5,
+			 color: '#666',
+			 dashArray: '',
+			 fillOpacity: 0.7
+	 });
+ }
+}
+
+function resetHighlight(e) {
+	var layer = e.target;
+
+	if (layer.options.color !== '#FFD700') {
+			geojson.resetStyle(layer);
+	}
+}
+
+var clickedStates = [];
+function onStateClick(e) {
+	var layer = e.target;
+	layer.setStyle({
+		weight: 5,
+		color:'#FFD700',
+		fillOpacity: 0.7
+	});
+
+	if (!clickedStates.includes(layer.feature.id)) {
+			clickedStates.push(layer.feature.id);
+	}
+}
+
+// highlights state on hover, resets highlighy on mouseout
+function onEachFeature(feature, layer) {
+	layer.on({
+	 mouseover: mouseoverHighlight,
+	 mouseout: resetHighlight,
+	 click: onStateClick
+	});
+}
+
+var timeslider = undefined;			//holds reference to slider which its added to the map in the $.get_results function
+var cityCoords = {{ city_coords | safe }};		//used to geocode cities for map, passed from views.py on startup
+
+// executed when slider position is changed
+// label: label of slider notch, value: index of slider notch, map: location map, data: holds variable locDate
+function refreshData({label, value, map, data}) {
+	// remove old markers
+	map.eachLayer(function (layer) {
+		if (layer instanceof L.Marker) {
+			map.removeLayer(layer);
+		}
+	});
+
+	// cityCounts maps cities where item is sold in selected month to the # of sales that month
+	var cityCounts = {};
+	for (var i=0; i<data.saledate.length; i++) {
+		if (data.saledate[i].slice(0,7) == label) {
+			city = data.location[i].replace(',', '')
+			if (cityCounts.hasOwnProperty(city)) {
+				cityCounts[city] += 1;
+			} else {
+				cityCounts[city] = 1;
+			}
+		}
+	}
+
+	// makes list of markers for cities with sales in selected month
+	var markerList = [];
+	for (var i=0; i<Object.keys(cityCounts).length; i++) {
+		city = Object.keys(cityCounts)[i];
+		var marker = new L.Marker(cityCoords[city]);
+		marker.bindPopup(city.concat("<br>Number Sold: ", cityCounts[city].toString()))	// popup that appears on marker hover
+		marker.on('mouseover', function (e) {
+					 this.openPopup();
+			 });
+		 marker.on('mouseout', function (e) {
+				 this.closePopup();
+		 });
+		markerList.push(marker);
+	}
+	L.featureGroup(markerList).addTo(map);
+}
+</script>
+
 <!-- Main JS that handles user interaction and sending/receiving data from views.py and csv files -->
 <script type="text/javascript">
 $(document).ready(function() {
@@ -235,13 +340,14 @@ $.get('/dashboard/populatedropdowns', {}, function(data) {
       	$('#Category').html(data['0']);
 });
 
+var locDate = undefined;
 // Get data upon selecting data and clicking get results
 $('#get_results').click(function() {
 
 		// Clear current plots
 		Plotly.purge(myDiv11);
 		Plotly.purge(myDiv12);
-		Plotly.purge(myDiv);
+		// Plotly.purge(myDiv);
     Plotly.purge(myDiv_hist);
 
 		// Get data from user selection
@@ -373,8 +479,67 @@ $('#get_results').click(function() {
         }
     };
 
-    Plotly.plot(myDiv, data2, layout, {showLink: false});
+		// getting data required for location map
+		$.get('/dashboard/getSliderData', {}, function(data) {
+			locDate = data;
+			// console.log(data['years_html'])
+			$('#mapYear').html(data['years_html']);		// updating map dropdown menu for years
+		});
 
+    // Plotly.plot(myDiv, data2, layout, {showLink: false});
+
+});
+
+// activates when changing Year dropdown on location map
+$('#mapYear').change(function () {
+	year = $('#mapYear').val();
+	console.log(year);
+
+	// remove old slider
+	if (timeslider !== undefined) {
+		myMap.removeControl(timeslider);
+	}
+
+
+	if (year !== '') {
+		// getting list of all months in selected year to pass to map slider
+		datelist = [];
+		for (var i=1; i<=12; i++) {
+			if (i<10) {
+				datelist.push(year.concat('-0', i.toString()));
+			} else {
+				datelist.push(year.concat('-', i.toString()));
+			}
+		}
+		// adding new slider
+		timeslider = L.control.timelineSlider({
+										timelineItems: datelist,
+										changeMap: refreshData,
+										extraChangeMapParams: {data: locDate},
+										position: "bottomleft",
+										labelWidth: "55px"})
+								.addTo(myMap);
+	}
+});
+
+$('#highlight_hist').click(function () {
+	// storing names of all cities with sales within selected states in clickedCities array
+	var locations = locDate.location;
+	var clickedCities = [];
+	for (var i=0; i< locations.length; i++) {
+		stateCode = locations[i].slice(-2);
+		if (clickedStates.includes(stateCode) && !clickedCities.includes(locations[i])) {
+			clickedCities.push(locations[i]);
+		}
+	}
+
+	// resetting clickedStates array and map highlighting
+	clickedStates = [];
+	myMap.eachLayer(function (layer) {
+		if (layer.options.color == '#FFD700') {
+			geojson.resetStyle(layer);
+		}
+	});
 });
 
 // Histogram Plots
@@ -565,8 +730,8 @@ $("#MapDataRankBy").change(function () {
         }
     };
 
-	Plotly.purge(myDiv);
-  Plotly.plot(myDiv, data2, layout, {showLink: false});
+	// Plotly.purge(myDiv);
+  // Plotly.plot(myDiv, data2, layout, {showLink: false});
 
 });
 
@@ -850,7 +1015,7 @@ $("#HistDataBinSize").change(function () {
 
 });
 
-// Update hist data to highlight a specific year and filter by location by changing the csv file 
+// Update hist data to highlight a specific year and filter by location by changing the csv file
 $("#HistDataHighlightYear").change(function () {
   update_csvs();
     // // var HistDataBinSize = $('#HistDataBinSize').val();
@@ -902,7 +1067,7 @@ $("#HistDataLocations").change(function () {
   });
 
 
-// Update hist data to highlight a specific year by changing the csv file 
+// Update hist data to highlight a specific year by changing the csv file
 // Don't have to update the highlight year if its not used
 $("#hist_go").click(function () {
     var HistDataBinSize = $('#HistDataBinSize').val();
@@ -1248,7 +1413,7 @@ thead {
     	<div style="border-color:#AE2573 !important;color:black;" class="panel">
         	<div style="background-color: #AE2573; color:white" class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> Visualize the above location data
         	<div class="pull-right">
-          	<div class="btn-group">
+          	<!-- <div class="btn-group">
                 <select style="color: blue" id="MapDataRankBy" class="dropdown-select">
                 	<option value="AvgPrice">Sort by Average Price</option>
   					<option value="TotalRev">Sort by Total Revenue</option>
@@ -1258,11 +1423,16 @@ thead {
   					<option value="LowSale">Sort by Lowest Sale</option>
   					<option value="SoldAssets">Sort by Sold Assets</option>
 				</select>
-              </div>
+            </div> -->
+					<div class="btn-group">Year: <select id="mapYear" class="dropdown-select Black"></select></div>
           </div>
         	</div>
         <div class="panel-body">
-        <div id="myDiv"></div>
+        <!-- <div id="myDiv"></div> -->
+				<div id="LMap" style="width: 700px; height: 400px"></div>
+				<div class="pull-left">
+					<button class="button" id="highlight_hist">Highlight Selected States in Histogram</button>
+				</div>
 		</div>
     </div>
 </div>
@@ -1279,7 +1449,7 @@ thead {
 <div class="pull-right">
 <style>
 .button {
-  background-color: #e7e7e7; 
+  background-color: #e7e7e7;
   border: none;
   color: #334CFF;
   padding: 2px 15px;
@@ -1358,7 +1528,7 @@ thead {
 
 </div>
 <div class="panel-body">
-<div id="myDiv_hist"></div>
+	<div id="myDiv_hist"></div>
 </div>
 </div>
 </div>
@@ -1395,7 +1565,8 @@ thead {
 </div>
 
 
-<script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+<!-- <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script> -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js'></script>
 <script src='http://cdnjs.cloudflare.com/ajax/libs/metisMenu/2.2.0/metisMenu.min.js'></script>
 <script src='http://cdnjs.cloudflare.com/ajax/libs/timelinejs/2.36.0/js/timeline-min.js'></script>
@@ -1403,7 +1574,22 @@ thead {
 <script src='http://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js'></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
+<!-- code for location data map, down here because it must be underneath map's <div> element  -->
+<script type="text/javascript">
+var myMap = L.map("LMap").setView([37.8, -96], 4);
 
+// adding map visual
+L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+	attribution:
+		'&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(myMap);
+
+// geoJSON of states is passed here on startup, uses style/onEachFeature functions from top of file
+var statesData = {{ us_states | safe }};
+var geojson;
+geojson = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(myMap);
+
+</script>
 
 </body>
 
