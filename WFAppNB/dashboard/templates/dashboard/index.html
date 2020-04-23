@@ -492,6 +492,7 @@ $('#get_results').click(function() {
 
 // activates when changing Year dropdown on location map
 $('#mapYear').change(function () {
+  update_csvs()
 	year = $('#mapYear').val();
 	console.log(year);
 
@@ -520,26 +521,6 @@ $('#mapYear').change(function () {
 										labelWidth: "55px"})
 								.addTo(myMap);
 	}
-});
-
-$('#highlight_hist').click(function () {
-	// storing names of all cities with sales within selected states in clickedCities array
-	var locations = locDate.location;
-	var clickedCities = [];
-	for (var i=0; i< locations.length; i++) {
-		stateCode = locations[i].slice(-2);
-		if (clickedStates.includes(stateCode) && !clickedCities.includes(locations[i])) {
-			clickedCities.push(locations[i]);
-		}
-	}
-
-	// resetting clickedStates array and map highlighting
-	clickedStates = [];
-	myMap.eachLayer(function (layer) {
-		if (layer.options.color == '#FFD700') {
-			geojson.resetStyle(layer);
-		}
-	});
 });
 
 // Histogram Plots
@@ -650,6 +631,28 @@ Plotly.newPlot('myDiv12', data1, layout);
 // $('#HistDataLocations').html(data['0']);
 // });
 
+
+});
+
+var clickedCities = [];
+$('#highlight_hist').click(function () {
+  clickedCities = [];
+  // storing names of all cities with sales within selected states in clickedCities array
+  var locations = locDate.location;
+  for (var i=0; i< locations.length; i++) {
+    stateCode = locations[i].slice(-2);
+    if (clickedStates.includes(stateCode) && !clickedCities.includes(locations[i])) {
+      clickedCities.push(locations[i]);
+    }
+  }
+  update_csvs();
+  // resetting clickedStates array and map highlighting
+  clickedStates = [];
+  myMap.eachLayer(function (layer) {
+    if (layer.options.color == '#FFD700') {
+      geojson.resetStyle(layer);
+    }
+  });
 
 });
 
@@ -771,13 +774,22 @@ function makeHist(HistDataRankBy, HistDataBinSize){
       // var boxNumber = 23; // Number of years
       var boxColor = [];
       var allColors = linspace(0, 360, boxNumber);
+      var allColors2 = linspace(0,360, 18);
       var data = [];
       var yValues = [];
 
       //Colors
 
+      var HistDataHighlightYear = $('#mapYear').val();
       for( var i = 0; i < boxNumber;  i++ ){
-        var result = 'hsl('+ allColors[i] +',50%'+',50%)';
+        // var result = 'hsl('+ allColors[i] +',50%'+',50%)';
+        var column_year = column_names[i].substring(0, 4);
+        if(column_year == HistDataHighlightYear){
+          var result = 'hsl('+ allColors2[200] +',50%'+',50%)';
+        }
+        else{
+          var result = 'hsl('+ allColors[i] +',50%'+',50%)';
+        }
         // If column_n[i] is in specfiied year then make it a specific colour... 
         boxColor.push(result);
       }
@@ -986,14 +998,19 @@ function makeHist(HistDataRankBy, HistDataBinSize){
 
 
 function update_csvs(){
-  var HistDataLocations = $('#HistDataLocations').val();
-  var HistDataHighlightYear = $('#HistDataHighlightYear').val();
+  // var HistDataLocations = $('#HistDataLocations').val();
+  var HistDataLocations = clickedCities;
+  // console.log(HistDataLocations);
+  // var HistDataHighlightYear = $('#HistDataHighlightYear').val();
+  var HistDataHighlightYear = $('#mapYear').val();
   var HistDataBinSize = $('#HistDataBinSize').val();
   $('#console').animate({opacity:0},function(){
   $(this).text("Please pause while csv updates")
   .animate({opacity:1});
   });
-      $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations': HistDataLocations, 'HistDataBinSize': HistDataBinSize}, function(data) {
+  // var HistJson = {}
+  // HistJson.HistDataLocationsJson = HistDataLocations
+      $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations[]': HistDataLocations, 'HistDataBinSize': HistDataBinSize}, function(data) {
     });
       $('#console').animate({opacity:0},function(){
   $(this).text("Might take a minute for the csv to load")
@@ -1016,55 +1033,55 @@ $("#HistDataBinSize").change(function () {
 });
 
 // Update hist data to highlight a specific year and filter by location by changing the csv file
-$("#HistDataHighlightYear").change(function () {
-  update_csvs();
-    // // var HistDataBinSize = $('#HistDataBinSize').val();
-    // // var HistDataRankBy = $('#HistDataRankBy').val();
-    // var HistDataLocations = $('#HistDataLocations').val();
-    // var HistDataHighlightYear = $('#HistDataHighlightYear').val();
-    // var HistDataBinSize = $('#HistDataBinSize').val();
-    // $('#console').animate({opacity:0},function(){
-    // $(this).text("Please pause while csv updates")
-    // .animate({opacity:1});
-    // });
-    // $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations': HistDataLocations, 'HistDataBinSize': HistDataBinSize}, function() {
-    //     // $('#TableData').html(data['0']);
-    //     // $('#BasketData').html(data['1']);
-    //     // $('#hi').html(data['0']);
+// $("#HistDataHighlightYear").change(function () {
+//   update_csvs();
+//     // // var HistDataBinSize = $('#HistDataBinSize').val();
+//     // // var HistDataRankBy = $('#HistDataRankBy').val();
+//     // var HistDataLocations = $('#HistDataLocations').val();
+//     // var HistDataHighlightYear = $('#HistDataHighlightYear').val();
+//     // var HistDataBinSize = $('#HistDataBinSize').val();
+//     // $('#console').animate({opacity:0},function(){
+//     // $(this).text("Please pause while csv updates")
+//     // .animate({opacity:1});
+//     // });
+//     // $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations': HistDataLocations, 'HistDataBinSize': HistDataBinSize}, function() {
+//     //     // $('#TableData').html(data['0']);
+//     //     // $('#BasketData').html(data['1']);
+//     //     // $('#hi').html(data['0']);
 
-    // // function show_popup(){
-    // //   $('#console').animate({opacity:0},function(){
-    // //   $(this).text("Waiting for csv")
-    // //   .animate({opacity:1});
-    // // });
-    // // };
-    // // window.setTimeout( show_popup, 5000 );
-    // });
+//     // // function show_popup(){
+//     // //   $('#console').animate({opacity:0},function(){
+//     // //   $(this).text("Waiting for csv")
+//     // //   .animate({opacity:1});
+//     // // });
+//     // // };
+//     // // window.setTimeout( show_popup, 5000 );
+//     // });
 
-    // // makeHist(HistDataRankBy, HistDataBinSize);
-    // $('#console').animate({opacity:0},function(){
-    // $(this).text("Done")
-    // .animate({opacity:1});
-    // });
-});
+//     // // makeHist(HistDataRankBy, HistDataBinSize);
+//     // $('#console').animate({opacity:0},function(){
+//     // $(this).text("Done")
+//     // .animate({opacity:1});
+//     // });
+// });
 
-// Update the csv files when HistDataLocations are changed
-$("#HistDataLocations").change(function () {
-  update_csvs();
-    // var HistDataLocations = $('#HistDataLocations').val();
-    // var HistDataHighlightYear = $('#HistDataHighlightYear').val();
-    // var HistDataBinSize = $('#HistDataBinSize').val();
-    // $('#console').animate({opacity:0},function(){
-    // $(this).text("Please pause while csv updates")
-    // .animate({opacity:1});
-    // });
-    //     $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations': HistDataLocations, 'HistDataBinSize': HistDataBinSize}, function(data) {
-    //   });
-    //     $('#console').animate({opacity:0},function(){
-    // $(this).text("Done")
-    // .animate({opacity:1});
-    // });
-  });
+// // Update the csv files when HistDataLocations are changed
+// $("#HistDataLocations").change(function () {
+//   update_csvs();
+//     // var HistDataLocations = $('#HistDataLocations').val();
+//     // var HistDataHighlightYear = $('#HistDataHighlightYear').val();
+//     // var HistDataBinSize = $('#HistDataBinSize').val();
+//     // $('#console').animate({opacity:0},function(){
+//     // $(this).text("Please pause while csv updates")
+//     // .animate({opacity:1});
+//     // });
+//     //     $.get('/dashboard/update_hist_data', {'highlight_year': HistDataHighlightYear, 'HistDataLocations': HistDataLocations, 'HistDataBinSize': HistDataBinSize}, function(data) {
+//     //   });
+//     //     $('#console').animate({opacity:0},function(){
+//     // $(this).text("Done")
+//     // .animate({opacity:1});
+//     // });
+//   });
 
 
 // Update hist data to highlight a specific year by changing the csv file
@@ -1411,28 +1428,20 @@ thead {
 <div class="row">
 	<div class="col-lg-12">
     	<div style="border-color:#AE2573 !important;color:black;" class="panel">
-        	<div style="background-color: #AE2573; color:white" class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> Visualize the above location data
+        	<div style="background-color: #AE2573; color:white" class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> View  monthly sale locations and click on states to filter graph below.
+          <div class="pull-right">
+          <button class="button" id="highlight_hist">Save</button>
+          </div>
         	<div class="pull-right">
-          	<!-- <div class="btn-group">
-                <select style="color: blue" id="MapDataRankBy" class="dropdown-select">
-                	<option value="AvgPrice">Sort by Average Price</option>
-  					<option value="TotalRev">Sort by Total Revenue</option>
-  					<option value="AvgMil">Sort by Average Mileage</option>
-  					<option value="AvgAge">Sort by Average Age</option>
-  					<option value="HighSale">Sort by Highest Sale</option>
-  					<option value="LowSale">Sort by Lowest Sale</option>
-  					<option value="SoldAssets">Sort by Sold Assets</option>
-				</select>
-            </div> -->
 					<div class="btn-group">Year: <select id="mapYear" class="dropdown-select Black"></select></div>
           </div>
         	</div>
         <div class="panel-body">
         <!-- <div id="myDiv"></div> -->
 				<div id="LMap" style="width: 700px; height: 400px"></div>
-				<div class="pull-left">
-					<button class="button" id="highlight_hist">Highlight Selected States in Histogram</button>
-				</div>
+				<!-- <div class="pull-left">
+					<button class="button" id="highlight_hist">Show a Histogram Only For The Highlighted States</button>
+				</div> -->
 		</div>
     </div>
 </div>
@@ -1440,11 +1449,11 @@ thead {
 
 <!-- Histogram -->
 
-<h2 class="Blue" >Visualization of asset over time in locations selected by the map <br><p class="CoolGrayDark" style="font-size: 15px;"></p></h2>
+<h2 class="Blue" >Histogram <br><p class="CoolGrayDark" style="font-size: 15px;"></p></h2>
 <div class="row">
 <div class="col-lg-12">
 <div style="border-color:#334CFF !important;color:black;" class="panel">
-<div style="background-color: #334CFF; color:white" class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> Select your location(s), bin size, and type of histogram
+<div style="background-color: #334CFF; color:white" class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> Select your desired bin size and type of histogram. 
 
 <div class="pull-right">
 <style>
@@ -1467,12 +1476,12 @@ thead {
 <div class="pull-right">
 <div class="btn-group">
 <select style="color: blue" id="HistDataRankBy" class="dropdown-select">
+<option value="box">Box and Whisker</option>
 <option value="avg">Average Price</option>
 <option value="sum">Total Revenue</option>
 <option value="count">Number of Sales</option>
 <option value="max">Max Value</option>
 <option value="min">Min Value</option>
-<option value="box">Box and Whisker</option>
 </select>
 </div>
 </div>
@@ -1489,7 +1498,7 @@ thead {
 </div>
 </div>
 
-<div class="pull-right">
+<!-- <div class="pull-right">
 <div class="btn-group">
 <select style="color: blue" id="HistDataHighlightYear" class="dropdown-select">
 <option value="None">All Years</option>
@@ -1514,9 +1523,9 @@ thead {
 <option value="2019">2019</option>
 </select>
 </div>
-</div>
+</div> -->
 
-<div class="pull-right">
+<!-- <div class="pull-right">
 <div class="btn-group">
 <select style="color: blue" id="HistDataLocations" class="dropdown-select">
 <option value="None">All Locations</option>
@@ -1524,7 +1533,7 @@ thead {
 <option value="SOUTH SIOUX CITY NE">SOUTH SIOUX CITY NE</option>
 </select>
 </div>
-</div>
+</div> -->
 
 </div>
 <div class="panel-body">

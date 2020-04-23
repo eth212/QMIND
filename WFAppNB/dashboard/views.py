@@ -182,15 +182,14 @@ def getGoogleTrends(request):
 
 # Helper function used in get_results, and hist_go
 # To Do:
-# Could change the colours of the boxplot the same way
 # Add a loading bar that stops only once the csv is actually ready
 # Sometimes the server still gets out of sync
-# Put the box and whisker plot first??
 def write_hist_data(Data, highlight_year=None, HistDataLocations=None):
+	# print(HistDataLocations)
 	Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
 	if(type(HistDataLocations) != type(None)):
-		Data = Data[Data["Location"] == HistDataLocations]
-		Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
+		Data = Data[Data["Location"].isin(HistDataLocations)]
+	Data.to_csv("dashboard/static/dashboard/csv/HistData.csv", columns=["SaleDate","SalesPrice", "YearMonth"])
 	# Make a second csv with just a single years worth of data, to turn a different colour upon a change in the map slider
 	if(type(highlight_year) != type(None)):
 		single_year = Data[Data['SaleDate'].dt.year==highlight_year]
@@ -220,7 +219,7 @@ def write_hist_data(Data, highlight_year=None, HistDataLocations=None):
 		df = [df1, df2]
 		df_final = pd.concat(df, axis = 1, ignore_index = True)
 		df1 = df_final
-	df_final.to_csv("dashboard/static/dashboard/csv/BoxData.csv", index=False)
+	df1.to_csv("dashboard/static/dashboard/csv/BoxData.csv", index=False)
 
 	# Try turning into df and then writing to file
 	# pd.DataFrame(np.array([np.append(["yearmonths"], unique_yearmonths), np.append(["n_yearmonths"], n_unique_yearmonths)], dtype = str).T).to_csv("dashboard/static/dashboard/csv/BoxDataColumns.csv")
@@ -702,16 +701,22 @@ def update_hist_data(request):
 
 	if request.method == "GET":
 		highlight_year = request.GET['highlight_year']
-		HistDataLocations = request.GET['HistDataLocations']
+		# print(request.GET)
+		# HistDataLocations = request.GET['HistDataLocations[]']
+		HistDataLocations = request.GET.getlist('HistDataLocations[]')
+		# HistDataLocations = request.GET.get('HistDataLocations[]')
+		# print(HistDataLocations)
 		bin_size = request.GET['HistDataBinSize']
 		data = pd.read_csv("dashboard/static/dashboard/csv/AllData.csv", parse_dates=["SaleDate"])
-		data = data.drop(columns=["Unnamed: 0"])
-		print(highlight_year)
+		data = data.drop(columns=["Unnamed: 0"]) # Could try using index=False in AllData.csv write
+		# print(highlight_year)
 		if(highlight_year == "None"):
 			highlight_year = None
+		elif(highlight_year == ""):
+			hightlight_year = None
 		else:
 			highlight_year = int(highlight_year)
-		if(HistDataLocations == "None"):
+		if(HistDataLocations == []):
 			HistDataLocations = None
 
 		strf = ''
