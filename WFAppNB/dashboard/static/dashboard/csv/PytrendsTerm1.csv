@@ -1,26 +1,26 @@
-geoName,used peterbilt,code
-Alabama,0,AL
+geoName,used freightliner,code
+Alabama,88,AL
 Alaska,0,AK
 Arizona,0,AZ
 Arkansas,0,AR
-California,31,CA
+California,45,CA
 Colorado,0,CO
 Connecticut,0,CT
 Delaware,0,DE
-Florida,25,FL
-Georgia,55,GA
+Florida,68,FL
+Georgia,98,GA
 Hawaii,0,HI
 Idaho,0,ID
-Illinois,46,IL
-Indiana,0,IN
+Illinois,54,IL
+Indiana,91,IN
 Iowa,0,IA
-Kansas,0,KS
+Kansas,99,KS
 Kentucky,0,KY
 Louisiana,0,LA
 Maine,0,ME
 Maryland,0,MD
 Massachusetts,0,MA
-Michigan,0,MI
+Michigan,76,MI
 Minnesota,0,MN
 Mississippi,0,MS
 Missouri,0,MO
@@ -28,24 +28,24 @@ Montana,0,MT
 Nebraska,100,NE
 Nevada,0,NV
 New Hampshire,0,NH
-New Jersey,0,NJ
+New Jersey,62,NJ
 New Mexico,0,NM
-New York,44,NY
-North Carolina,52,NC
+New York,80,NY
+North Carolina,66,NC
 North Dakota,0,ND
-Ohio,50,OH
+Ohio,53,OH
 Oklahoma,0,OK
 Oregon,0,OR
-Pennsylvania,56,PA
+Pennsylvania,50,PA
 Rhode Island,0,RI
-South Carolina,0,SC
+South Carolina,71,SC
 South Dakota,0,SD
-Tennessee,88,TN
-Texas,76,TX
+Tennessee,66,TN
+Texas,71,TX
 Utah,0,UT
 Vermont,0,VT
-Virginia,0,VA
-Washington,43,WA
+Virginia,59,VA
+Washington,0,WA
 West Virginia,0,WV
 Wisconsin,0,WI
 Wyoming,0,WY
